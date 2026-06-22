@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cal — calorie tracker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#0e0e10;--surface:#18181b;--surface2:#222226;--surface3:#2a2a2f;
+  --border:rgba(255,255,255,.08);--border-h:rgba(255,255,255,.14);
+  --text:#f0f0f2;--t2:#9898a6;--t3:#56565f;
+  --green:#22c98a;--gdim:rgba(34,201,138,.15);
+  --red:#f05a5a;--rdim:rgba(240,90,90,.15);
+  --blue:#5b9cf6;--bdim:rgba(91,156,246,.12);
+  --amber:#f5a623;--adim:rgba(245,166,35,.15);
+  --purple:#9d7dea;--pdim:rgba(157,125,234,.15);
+  --r:10px;--rl:14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;min-height:100vh;line-height:1.5}
+.app{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.logo{font-size:20px;font-weight:700;letter-spacing:-.5px;margin-bottom:2rem;padding-left:.25rem}
+.logo span{color:var(--green)}
+.nav-item{display:flex;align-items:center;gap:9px;padding:.5rem .75rem;border-radius:var(--r);font-size:14px;color:var(--t2);cursor:pointer;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;transition:background .12s,color .12s}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--surface3);color:var(--text)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.nav-sep{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);padding:.5rem .75rem;margin:.5rem 0 .25rem}
+
+/* Main */
+.main{flex:1;padding:2rem 2.5rem;overflow-y:auto;max-width:1000px}
+.page{display:none}.page.active{display:block}
+.page-title{font-size:22px;font-weight:600;letter-spacing:-.4px;margin-bottom:.2rem}
+.page-sub{font-size:14px;color:var(--t2);margin-bottom:1.5rem}
+
+/* Month nav */
+.month-nav{display:flex;align-items:center;gap:12px;margin-bottom:1.25rem}
+.month-nav-title{font-size:17px;font-weight:600;flex:1}
+.month-btn{height:32px;width:32px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .12s}
+.month-btn:hover{background:var(--surface3)}
+.today-btn{height:32px;padding:0 12px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--t2);cursor:pointer;font-size:12px;transition:background .12s}
+.today-btn:hover{background:var(--surface3);color:var(--text)}
+
+/* Calendar grid */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:1.5rem}
+.cal-dow{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;text-align:center;padding:.25rem 0}
+.cal-cell{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:.5rem .5rem .4rem;min-height:74px;cursor:pointer;transition:border-color .12s,background .12s;position:relative}
+.cal-cell:hover{border-color:var(--border-h);background:var(--surface2)}
+.cal-cell.active{border-color:var(--blue);background:var(--bdim)}
+.cal-cell.today{border-color:rgba(255,255,255,.22)}
+.cal-cell.other-month{opacity:.35}
+.cal-cell.empty{background:transparent;border-color:transparent;cursor:default;min-height:0}
+.cal-cell:hover.empty{background:transparent}
+.cal-day-num{font-size:12px;font-weight:600;color:var(--t2);margin-bottom:4px}
+.cal-cell.today .cal-day-num{color:var(--blue)}
+.cal-net{font-size:14px;font-weight:600;letter-spacing:-.3px}
+.cal-sub{font-size:10px;color:var(--t3);margin-top:2px}
+.cal-dot-row{display:flex;gap:3px;margin-top:4px}
+.cal-dot{width:5px;height:5px;border-radius:50%}
+.cal-bar-wrap{height:2px;background:var(--surface3);border-radius:1px;margin-top:4px;overflow:hidden}
+.cal-bar{height:100%;border-radius:1px}
+
+/* Metrics */
+.metric-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.5rem}
+.metric-row-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:1.5rem}
+.metric{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1rem 1.125rem}
+.metric-label{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.metric-val{font-size:24px;font-weight:600;letter-spacing:-.5px}
+.metric-sub{font-size:11px;color:var(--t3);margin-top:4px}
+.green{color:var(--green)}.red{color:var(--red)}.blue{color:var(--blue)}.amber{color:var(--amber)}.purple{color:var(--purple)}
+
+/* Card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1.25rem 1.5rem;margin-bottom:1.25rem}
+.card-title{font-size:13px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem}
+
+/* Form fields */
+.field label{font-size:11px;color:var(--t3);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.field input,.field select{width:100%;height:36px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:14px;padding:0 10px;transition:border-color .12s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--blue)}
+.field input::placeholder{color:var(--t3)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.875rem}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:.875rem}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:.875rem}
+
+/* Buttons */
+.btn{height:36px;padding:0 16px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text);transition:background .12s,border-color .12s}
+.btn:hover{background:var(--surface3)}
+.btn-primary{background:var(--green);border-color:var(--green);color:#0a1f16}
+.btn-primary:hover{background:#28e09a}
+.btn-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.divider{border:none;border-top:1px solid var(--border);margin:.875rem 0}
+
+/* Charts */
+.chart-wrap{position:relative;width:100%}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
+.legend-sq{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* Tables */
+.t{width:100%;border-collapse:collapse;font-size:13px}
+.t th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);padding:.5rem .75rem;border-bottom:1px solid var(--border);font-weight:500}
+.t td{padding:.6rem .75rem;border-bottom:1px solid var(--border);color:var(--t2)}
+.t td:first-child{color:var(--text)}
+.t tr:last-child td{border-bottom:none}
+.t tr.clickable:hover td{background:var(--surface2);cursor:pointer}
+
+/* Macro bars */
+.mbar{margin-bottom:.875rem}
+.mbar-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.mbar-label{font-size:13px;font-weight:500}
+.mbar-nums{font-size:12px;color:var(--t3)}
+.mbar-track{height:7px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.mbar-fill{height:100%;border-radius:4px;transition:width .3s}
+
+/* Insight cards */
+.insight-list{display:flex;flex-direction:column;gap:9px}
+.ic{background:var(--surface2);border-radius:var(--r);padding:.875rem 1rem;border-left:3px solid transparent;font-size:13px;line-height:1.65}
+.ic.good{border-left-color:var(--green)}.ic.warn{border-left-color:var(--amber)}.ic.bad{border-left-color:var(--red)}.ic.info{border-left-color:var(--blue)}
+.ic-title{font-weight:600;margin-bottom:3px;font-size:13px}
+.ic.good .ic-title{color:var(--green)}.ic.warn .ic-title{color:var(--amber)}.ic.bad .ic-title{color:var(--red)}.ic.info .ic-title{color:var(--blue)}
+.ic-body{color:var(--t2)}
+
+/* Analysis tabs */
+.atabs{display:flex;gap:4px;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center}
+.atab{padding:5px 12px;border-radius:var(--r);font-size:12px;border:1px solid var(--border);background:none;color:var(--t2);cursor:pointer;transition:background .12s,color .12s}
+.atab:hover{background:var(--surface2);color:var(--text)}
+.atab.active{background:var(--surface3);color:var(--text);border-color:var(--border-h)}
+
+/* Formula */
+.formula{font-size:12px;color:var(--t3);line-height:1.8;background:var(--surface2);border-radius:var(--r);padding:.625rem .875rem}
+.formula strong{color:var(--t2);font-weight:600}
+
+/* Badge */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.badge-green{background:var(--gdim);color:var(--green)}
+.badge-blue{background:var(--bdim);color:var(--blue)}
+.badge-red{background:var(--rdim);color:var(--red)}
+
+/* Hint */
+.hint{background:var(--bdim);border:1px solid rgba(91,156,246,.2);border-radius:var(--r);padding:.75rem 1rem;font-size:12px;color:var(--t2);line-height:1.7;margin-top:1rem}
+.hint code{font-family:monospace;background:var(--surface3);padding:1px 5px;border-radius:4px;font-size:11px}
+
+/* Toast */
+#toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--surface3);border:1px solid var(--border-h);border-radius:var(--r);padding:.625rem 1rem;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999}
+#toast.show{opacity:1}
+
+/* Food suggestions grid */
+.food-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.food-card{border-radius:var(--r);padding:.75rem}
+
+/* History list */
+.hist-month-label{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;padding:.5rem .75rem;margin-top:.5rem}
+
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px}
+
+@media(max-width:700px){
+  .sidebar{display:none}
+  .main{padding:1rem}
+  .metric-row,.metric-row-3{grid-template-columns:1fr 1fr}
+  .chart-grid,.food-grid{grid-template-columns:1fr}
+  .g3,.g4{grid-template-columns:1fr 1fr}
+  .cal-grid{gap:3px}
+  .cal-cell{min-height:54px;padding:.35rem}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="logo">Cal<span>.</span></div>
+  <button class="nav-item active" onclick="showPage('overview',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Overview
+  </button>
+  <button class="nav-item" onclick="showPage('log',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg>
+    Log day
+  </button>
+  <button class="nav-item" onclick="showPage('analysis',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 19v-6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2zm0 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V9a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v10"/></svg>
+    Macro analysis
+  </button>
+  <button class="nav-item" onclick="showPage('charts',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 3"/></svg>
+    Charts
+  </button>
+  <button class="nav-item" onclick="showPage('maintenance',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>
+    Maintenance
+  </button>
+  <button class="nav-item" onclick="showPage('history',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 6 12 12 16 14"/></svg>
+    History
+  </button>
+  <div class="nav-sep">Settings</div>
+  <button class="nav-item" onclick="showPage('profile',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    Profile
+  </button>
+</aside>
+
+<main class="main">
+
+<!-- OVERVIEW -->
+<div class="page active" id="page-overview">
+  <div class="page-title">Overview</div>
+  <div class="page-sub" id="ov-sub"></div>
+  <div class="month-nav">
+    <button class="month-btn" onclick="shiftMonth(-1)">&#8249;</button>
+    <div class="month-nav-title" id="ov-month-title"></div>
+    <button class="today-btn" onclick="goToday()">Today</button>
+    <button class="month-btn" onclick="shiftMonth(1)">&#8250;</button>
+  </div>
+  <div class="metric-row" id="ov-metrics"></div>
+  <div class="card">
+    <div class="card-title">Calendar — click a day to log or view</div>
+    <div class="cal-grid" id="cal-dows"></div>
+    <div class="cal-grid" id="cal-cells"></div>
+  </div>
+  <div class="card" style="margin-top:1.25rem">
+    <div class="card-title">Month breakdown</div>
+    <div style="overflow-x:auto"><table class="t" id="ov-table"></table></div>
+  </div>
+</div>
+
+<!-- LOG DAY -->
+<div class="page" id="page-log">
+  <div class="page-title">Log a day</div>
+  <div class="page-sub">Editing <strong id="log-day-label">—</strong></div>
+  <div class="month-nav" style="margin-bottom:1rem">
+    <button class="month-btn" onclick="logShiftMonth(-1)">&#8249;</button>
+    <div class="month-nav-title" id="log-month-title"></div>
+    <button class="today-btn" onclick="logGoToday()">Today</button>
+    <button class="month-btn" onclick="logShiftMonth(1)">&#8250;</button>
+  </div>
+  <div class="cal-grid" id="log-cal-dows" style="margin-bottom:6px"></div>
+  <div class="cal-grid" id="log-cal-cells" style="margin-bottom:1.25rem"></div>
+  <div class="card">
+    <div class="card-title" id="log-card-title">Day data</div>
+    <div class="g3">
+      <div class="field"><label>Steps</label><input type="number" id="l-steps" min="0" max="100000" step="100" placeholder="e.g. 8500"></div>
+      <div class="field"><label>Calories consumed</label><input type="number" id="l-cal" min="0" max="12000" placeholder="e.g. 2200"></div>
+      <div class="field"><label>Exercise burn (kcal)</label><input type="number" id="l-burn" min="0" max="3000" placeholder="e.g. 0"></div>
+    </div>
+    <hr class="divider">
+    <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem">Macronutrients</div>
+    <div class="g4">
+      <div class="field"><label>Protein (g)</label><input type="number" id="l-prot" min="0" max="500" placeholder="e.g. 150"></div>
+      <div class="field"><label>Carbs (g)</label><input type="number" id="l-carb" min="0" max="1000" placeholder="e.g. 338"></div>
+      <div class="field"><label>Fat (g)</label><input type="number" id="l-fat" min="0" max="500" placeholder="e.g. 81"></div>
+      <div class="field"><label>Fibre (g)</label><input type="number" id="l-fib" min="0" max="200" placeholder="e.g. 30"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveDay()">Save day</button>
+      <button class="btn" onclick="clearDay()">Clear day</button>
+    </div>
+    <div class="hint">
+      <strong style="color:var(--blue)">Apple Health:</strong> Health app &rarr; profile photo &rarr; Export All Health Data. Calories live under <code>HKQuantityTypeIdentifierDietaryEnergyConsumed</code>, macros under <code>HKQuantityTypeIdentifierDietaryProtein</code> etc.
+    </div>
+  </div>
+</div>
+
+<!-- MACRO ANALYSIS -->
+<div class="page" id="page-analysis">
+  <div class="page-title">Macro analysis</div>
+  <div class="page-sub">Targets: <strong style="color:var(--purple)" id="an-prot-target">150g protein</strong> · <strong style="color:var(--amber)" id="an-carb-target">338g carbs</strong> · <strong style="color:var(--red)" id="an-fat-target">81g fat</strong></div>
+  <div class="atabs">
+    <div style="font-size:12px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-right:4px">View:</div>
+    <button class="atab active" id="atab-month" onclick="setAnalysisTab('month')">Month avg</button>
+    <button class="atab" id="atab-day" onclick="setAnalysisTab('day')">Single day</button>
+  </div>
+  <div id="an-month-panel">
+    <div class="month-nav">
+      <button class="month-btn" onclick="anShiftMonth(-1)">&#8249;</button>
+      <div class="month-nav-title" id="an-month-title"></div>
+      <button class="today-btn" onclick="anGoToday()">This month</button>
+      <button class="month-btn" onclick="anShiftMonth(1)">&#8250;</button>
+    </div>
+    <div class="metric-row" id="an-month-metrics"></div>
+    <div class="chart-grid" style="margin-bottom:1.25rem">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">Attainment vs targets</div>
+        <div class="chart-wrap" style="height:220px"><canvas id="an-radar" role="img" aria-label="Radar chart of macro attainment">Radar.</canvas></div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title">Avg progress to targets</div>
+        <div id="an-month-bars"></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-title">Monthly insights</div><div class="insight-list" id="an-month-insights"></div></div>
+    <div class="card"><div class="card-title">Day-by-day heatmap</div><div style="overflow-x:auto"><table class="t" id="an-heatmap"></table></div></div>
+  </div>
+  <div id="an-day-panel" style="display:none">
+    <div class="month-nav">
+      <button class="month-btn" onclick="anDayShiftMonth(-1)">&#8249;</button>
+      <div class="month-nav-title" id="an-day-month-title"></div>
+      <button class="today-btn" onclick="anDayGoToday()">Today</button>
+      <button class="month-btn" onclick="anDayShiftMonth(1)">&#8250;</button>
+    </div>
+    <div class="cal-grid" id="an-day-dows" style="margin-bottom:6px"></div>
+    <div class="cal-grid" id="an-day-cells" style="margin-bottom:1.25rem"></div>
+    <div class="metric-row" id="an-day-metrics"></div>
+    <div class="card"><div class="card-title" id="an-day-progress-title">Progress — select a day above</div><div id="an-day-bars"></div></div>
+    <div class="card"><div class="card-title">Daily insights</div><div class="insight-list" id="an-day-insights"></div></div>
+    <div class="card"><div class="card-title">What to eat to hit remaining targets</div><div id="an-day-food"></div></div>
+  </div>
+</div>
+
+<!-- CHARTS -->
+<div class="page" id="page-charts">
+  <div class="page-title">Charts</div>
+  <div class="page-sub" id="ch-sub"></div>
+  <div class="month-nav">
+    <button class="month-btn" onclick="chShiftMonth(-1)">&#8249;</button>
+    <div class="month-nav-title" id="ch-month-title"></div>
+    <button class="today-btn" onclick="chGoToday()">This month</button>
+    <button class="month-btn" onclick="chShiftMonth(1)">&#8250;</button>
+  </div>
+  <div class="metric-row" id="ch-metrics"></div>
+  <div class="chart-grid" style="margin-bottom:1.25rem">
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title">Weekly avg macro split</div>
+      <div class="legend"><div class="legend-item"><span class="legend-sq" style="background:#9d7dea"></span>Protein</div><div class="legend-item"><span class="legend-sq" style="background:#f5a623"></span>Carbs</div><div class="legend-item"><span class="legend-sq" style="background:#f05a5a"></span>Fat</div><div class="legend-item"><span class="legend-sq" style="background:#22c98a"></span>Fibre</div></div>
+      <div class="chart-wrap" style="height:200px"><canvas id="ch-donut">Donut.</canvas></div>
+    </div>
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title">Calories vs TDEE — daily</div>
+      <div class="legend"><div class="legend-item"><span class="legend-sq" style="background:#22c98a"></span>TDEE</div><div class="legend-item"><span class="legend-sq" style="background:#5b9cf6"></span>Consumed</div></div>
+      <div class="chart-wrap" style="height:200px"><canvas id="ch-cal">Cal chart.</canvas></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Macro daily trend</div>
+    <div class="legend"><div class="legend-item"><span class="legend-sq" style="background:#9d7dea"></span>Protein</div><div class="legend-item"><span class="legend-sq" style="background:#f5a623"></span>Carbs</div><div class="legend-item"><span class="legend-sq" style="background:#f05a5a"></span>Fat</div></div>
+    <div class="chart-wrap" style="height:200px"><canvas id="ch-trend">Trend.</canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Net surplus / deficit — daily</div>
+    <div class="legend"><div class="legend-item"><span class="legend-sq" style="background:#f05a5a"></span>Surplus</div><div class="legend-item"><span class="legend-sq" style="background:#22c98a"></span>Deficit</div></div>
+    <div class="chart-wrap" style="height:180px"><canvas id="ch-net">Net chart.</canvas></div>
+  </div>
+</div>
+
+<!-- MAINTENANCE -->
+<div class="page" id="page-maintenance">
+  <div class="page-title">Maintenance</div>
+  <div class="page-sub">TDEE = BMR + step calories + exercise burn, computed per day.</div>
+  <div class="metric-row" id="mn-metrics"></div>
+  <div class="card"><div class="card-title">Formula</div><div class="formula" id="mn-formula"></div></div>
+  <div class="card">
+    <div class="card-title">TDEE vs consumed (this month)</div>
+    <div class="legend"><div class="legend-item"><span class="legend-sq" style="background:#22c98a"></span>TDEE</div><div class="legend-item"><span class="legend-sq" style="background:#5b9cf6"></span>Consumed</div><div class="legend-item"><span class="legend-sq" style="background:#f05a5a"></span>Surplus</div><div class="legend-item"><span class="legend-sq" style="background:rgba(157,125,234,.6)"></span>Deficit</div></div>
+    <div class="chart-wrap" style="height:230px"><canvas id="mn-chart">Maintenance chart.</canvas></div>
+  </div>
+  <div class="card"><div class="card-title">Monthly surplus summary</div><div class="metric-row" id="mn-surplus" style="margin-bottom:0"></div></div>
+</div>
+
+<!-- HISTORY -->
+<div class="page" id="page-history">
+  <div class="page-title">All-time history</div>
+  <div class="page-sub">Every day you have ever logged, newest first. Click any row to edit that day.</div>
+  <div class="card" style="padding:.5rem 0">
+    <div id="hist-list" style="max-height:600px;overflow-y:auto"></div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="page-profile">
+  <div class="page-title">Profile</div>
+  <div class="page-sub">Stats, macro targets, and data management.</div>
+  <div class="card">
+    <div class="card-title">Body stats</div>
+    <div class="g2">
+      <div class="field"><label>Weight (kg)</label><input type="number" id="p-weight" value="80" min="30" max="300" oninput="saveProfile()"></div>
+      <div class="field"><label>Height (cm)</label><input type="number" id="p-height" value="183" min="100" max="250" oninput="saveProfile()"></div>
+      <div class="field"><label>Age</label><input type="number" id="p-age" value="19" min="10" max="100" oninput="saveProfile()"></div>
+      <div class="field"><label>Sex</label><select id="p-sex" oninput="saveProfile()"><option value="m">Male</option><option value="f">Female</option></select></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Daily macro targets</div>
+    <div class="g2">
+      <div class="field"><label>Protein (g)</label><input type="number" id="p-tp" value="150" min="0" max="500" oninput="saveProfile()"></div>
+      <div class="field"><label>Carbohydrates (g)</label><input type="number" id="p-tc" value="338" min="0" max="1000" oninput="saveProfile()"></div>
+      <div class="field"><label>Fat (g)</label><input type="number" id="p-tf" value="81" min="0" max="400" oninput="saveProfile()"></div>
+      <div class="field"><label>Daily calorie goal (kcal)</label><input type="number" id="p-goal" value="2000" min="1000" max="6000" step="50" oninput="saveProfile()"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Step settings</div>
+    <div class="g2">
+      <div class="field"><label>Kcal per step</label><input type="number" id="p-ks" value="0.045" step="0.001" min="0.01" max="0.12" oninput="saveProfile()"></div>
+    </div>
+    <div class="formula" style="margin-top:.875rem" id="p-formula"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Data</div>
+    <div class="btn-row">
+      <button class="btn" onclick="exportData()">Export JSON</button>
+      <button class="btn" onclick="importTrigger()">Import JSON</button>
+      <button class="btn" onclick="clearMonth()" style="color:var(--amber);border-color:rgba(245,166,35,.3)">Clear this month</button>
+      <button class="btn" onclick="clearAll()" style="color:var(--red);border-color:rgba(240,90,90,.3)">Clear all data</button>
+    </div>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
+  </div>
+</div>
+
+</main>
+</div>
+<div id="toast"></div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let profile = {weight:80,height:183,age:19,sex:'m',goal:2000,kcalStep:0.045,tp:150,tc:338,tf:81};
+// dayData[dateKey] = {steps,cal,burn,prot,carb,fat,fib}  dateKey = "YYYY-MM-DD"
+let dayData = {};
+
+const NOW = new Date();
+let viewYear  = NOW.getFullYear();
+let viewMonth = NOW.getMonth(); // 0-based
+
+let logViewYear  = NOW.getFullYear();
+let logViewMonth = NOW.getMonth();
+
+let anViewYear  = NOW.getFullYear();
+let anViewMonth = NOW.getMonth();
+
+let anDayViewYear  = NOW.getFullYear();
+let anDayViewMonth = NOW.getMonth();
+
+let chViewYear  = NOW.getFullYear();
+let chViewMonth = NOW.getMonth();
+
+let selectedLogDate = dateKey(NOW);  // currently selected day for Log page
+let selectedAnDay   = dateKey(NOW);  // currently selected day for Analysis daily tab
+let analysisTab = 'month';
+let charts = {};
+
+// ─── Date helpers ─────────────────────────────────────────────────────────────
+function dateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0') }
+function keyDate(k){ const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d) }
+function todayKey(){ return dateKey(NOW) }
+function monthLabel(y,m){ return new Date(y,m,1).toLocaleDateString('en-AU',{month:'long',year:'numeric'}) }
+function shortDate(k){ const d=keyDate(k); return d.toLocaleDateString('en-AU',{day:'numeric',month:'short'}) }
+function dowAbbr(d){ return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()] }
+
+function daysInMonth(y,m){ return new Date(y,m+1,0).getDate() }
+function monthKeys(y,m){
+  const keys=[];
+  for(let d=1;d<=daysInMonth(y,m);d++){
+    keys.push(y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'));
+  }
+  return keys;
+}
+function isToday(k){ return k===todayKey() }
+
+// ─── Profile / persistence ────────────────────────────────────────────────────
+function save(){
+  localStorage.setItem('cal2_profile',JSON.stringify(profile));
+  localStorage.setItem('cal2_days',JSON.stringify(dayData));
+}
+function load(){
+  const p=localStorage.getItem('cal2_profile');
+  const d=localStorage.getItem('cal2_days');
+  if(p) profile={...profile,...JSON.parse(p)};
+  if(d) dayData=JSON.parse(d);
+  syncProfileInputs();
+}
+function syncProfileInputs(){
+  document.getElementById('p-weight').value=profile.weight;
+  document.getElementById('p-height').value=profile.height;
+  document.getElementById('p-age').value=profile.age;
+  document.getElementById('p-sex').value=profile.sex;
+  document.getElementById('p-goal').value=profile.goal;
+  document.getElementById('p-ks').value=profile.kcalStep;
+  document.getElementById('p-tp').value=profile.tp;
+  document.getElementById('p-tc').value=profile.tc;
+  document.getElementById('p-tf').value=profile.tf;
+}
+function saveProfile(){
+  profile.weight=parseFloat(document.getElementById('p-weight').value)||80;
+  profile.height=parseFloat(document.getElementById('p-height').value)||183;
+  profile.age=parseFloat(document.getElementById('p-age').value)||19;
+  profile.sex=document.getElementById('p-sex').value;
+  profile.goal=parseInt(document.getElementById('p-goal').value)||2000;
+  profile.kcalStep=parseFloat(document.getElementById('p-ks').value)||0.045;
+  profile.tp=parseInt(document.getElementById('p-tp').value)||150;
+  profile.tc=parseInt(document.getElementById('p-tc').value)||338;
+  profile.tf=parseInt(document.getElementById('p-tf').value)||81;
+  save(); renderAll();
+}
+
+// ─── Calorie / BMR ────────────────────────────────────────────────────────────
+function getBMR(){ const {weight,height,age,sex}=profile; return Math.round((10*weight)+(6.25*height)-(5*age)+(sex==='m'?5:-161)) }
+function getTDEE(k){ const d=getDay(k); return Math.round(getBMR()+(d.steps*profile.kcalStep)+(d.burn||0)) }
+function getDay(k){ return dayData[k]||{steps:0,cal:0,burn:0,prot:0,carb:0,fat:0,fib:0} }
+function hasData(k){ const d=dayData[k]; return d&&(d.cal>0||d.steps>0||d.prot>0) }
+
+// ─── Nav ──────────────────────────────────────────────────────────────────────
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  renderAll();
+}
+
+// ─── Log page ─────────────────────────────────────────────────────────────────
+function selectLogDate(k){
+  selectedLogDate=k;
+  populateLogForm();
+  renderLogCalendar();
+}
+function logShiftMonth(dir){ logViewMonth+=dir; if(logViewMonth>11){logViewMonth=0;logViewYear++}else if(logViewMonth<0){logViewMonth=11;logViewYear--} renderLogCalendar() }
+function logGoToday(){ logViewYear=NOW.getFullYear();logViewMonth=NOW.getMonth();selectedLogDate=todayKey();populateLogForm();renderLogCalendar() }
+
+function populateLogForm(){
+  const d=getDay(selectedLogDate);
+  document.getElementById('l-steps').value=d.steps||'';
+  document.getElementById('l-cal').value=d.cal||'';
+  document.getElementById('l-burn').value=d.burn||'';
+  document.getElementById('l-prot').value=d.prot||'';
+  document.getElementById('l-carb').value=d.carb||'';
+  document.getElementById('l-fat').value=d.fat||'';
+  document.getElementById('l-fib').value=d.fib||'';
+  const kd=keyDate(selectedLogDate);
+  const label=kd.toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('log-day-label').textContent=label;
+  document.getElementById('log-card-title').textContent='Data for '+label;
+}
+function saveDay(){
+  dayData[selectedLogDate]={
+    steps:parseInt(document.getElementById('l-steps').value)||0,
+    cal:parseInt(document.getElementById('l-cal').value)||0,
+    burn:parseInt(document.getElementById('l-burn').value)||0,
+    prot:parseInt(document.getElementById('l-prot').value)||0,
+    carb:parseInt(document.getElementById('l-carb').value)||0,
+    fat:parseInt(document.getElementById('l-fat').value)||0,
+    fib:parseInt(document.getElementById('l-fib').value)||0
+  };
+  if(!hasData(selectedLogDate)) delete dayData[selectedLogDate];
+  save(); renderAll(); toast('Saved — '+shortDate(selectedLogDate));
+}
+function clearDay(){
+  delete dayData[selectedLogDate];
+  ['l-steps','l-cal','l-burn','l-prot','l-carb','l-fat','l-fib'].forEach(id=>document.getElementById(id).value='');
+  save(); renderAll(); toast('Cleared — '+shortDate(selectedLogDate));
+}
+
+// ─── Calendar renderer (shared) ───────────────────────────────────────────────
+function renderCalendar(dowsId,cellsId,y,m,activeKey,onClickFn,compact){
+  const dowsEl=document.getElementById(dowsId);
+  const cellsEl=document.getElementById(cellsId);
+  if(!dowsEl||!cellsEl) return;
+  const DOWS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  dowsEl.innerHTML=DOWS.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+
+  const firstDay=new Date(y,m,1).getDay(); // 0=Sun
+  const startOffset=(firstDay===0?6:firstDay-1); // Mon-based
+  const totalDays=daysInMonth(y,m);
+  const totalCells=Math.ceil((startOffset+totalDays)/7)*7;
+
+  let html='';
+  for(let i=0;i<totalCells;i++){
+    const dayNum=i-startOffset+1;
+    if(dayNum<1||dayNum>totalDays){ html+='<div class="cal-cell empty"></div>'; continue; }
+    const k=y+'-'+String(m+1).padStart(2,'0')+'-'+String(dayNum).padStart(2,'0');
+    const d=getDay(k);
+    const tdee=getTDEE(k);
+    const net=d.cal>0?d.cal-tdee:null;
+    const isActive=k===activeKey;
+    const itd=isToday(k);
+    const pct=d.cal>0?Math.min(Math.round((d.cal/profile.goal)*100),100):0;
+    const netColor=net===null?'var(--t3)':net>0?'var(--red)':'var(--green)';
+    const barColor=net===null?'var(--surface3)':net>0?'var(--red)':'var(--green)';
+    // macro dots
+    const dp=getDay(k);
+    const ppct=profile.tp>0?dp.prot/profile.tp:0;
+    const cpct=profile.tc>0?dp.carb/profile.tc:0;
+    const fpct=profile.tf>0?dp.fat/profile.tf:0;
+    const dotColor=pct=>(pct>=0.85&&pct<=1.15)?'var(--green)':pct>=0.6?'var(--amber)':'var(--red)';
+    const dotsHtml=hasData(k)&&dp.prot>0?`<div class="cal-dot-row"><div class="cal-dot" style="background:${dotColor(ppct)}"></div><div class="cal-dot" style="background:${dotColor(cpct)}"></div><div class="cal-dot" style="background:${dotColor(fpct)}"></div></div>`:'';
+
+    html+=`<div class="cal-cell${isActive?' active':''}${itd&&!isActive?' today':''}" onclick="${onClickFn}('${k}')">
+      <div class="cal-day-num">${dayNum}</div>
+      <div class="cal-net" style="color:${netColor}">${net===null?(hasData(k)?'✓':''):(net>0?'+':'')+net}</div>
+      <div class="cal-sub">${d.steps>0?d.steps.toLocaleString()+'s':d.cal>0?d.cal+'kcal':''}</div>
+      ${dotsHtml}
+      <div class="cal-bar-wrap"><div class="cal-bar" style="width:${pct}%;background:${barColor}"></div></div>
+    </div>`;
+  }
+  cellsEl.innerHTML=html;
+}
+
+// ─── Overview ─────────────────────────────────────────────────────────────────
+function shiftMonth(dir){ viewMonth+=dir; if(viewMonth>11){viewMonth=0;viewYear++}else if(viewMonth<0){viewMonth=11;viewYear--} renderOverview() }
+function goToday(){ viewYear=NOW.getFullYear();viewMonth=NOW.getMonth();renderOverview() }
+
+function renderOverview(){
+  document.getElementById('ov-month-title').textContent=monthLabel(viewYear,viewMonth);
+  document.getElementById('ov-sub').textContent=monthLabel(viewYear,viewMonth)+' — click any day to view or log it';
+  renderCalendar('cal-dows','cal-cells',viewYear,viewMonth,null,'ovClickDay');
+
+  const keys=monthKeys(viewYear,viewMonth).filter(hasData);
+  const daysLogged=keys.length||1;
+  const totalCal=keys.reduce((s,k)=>s+getDay(k).cal,0);
+  const totalTDEE=keys.reduce((s,k)=>s+getTDEE(k),0);
+  const totalNet=keys.reduce((s,k)=>s+(getDay(k).cal-getTDEE(k)),0);
+  const avgMaint=Math.round(totalTDEE/daysLogged);
+
+  document.getElementById('ov-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Days logged</div><div class="metric-val blue">${keys.length}</div><div class="metric-sub">of ${daysInMonth(viewYear,viewMonth)} days</div></div>
+    <div class="metric"><div class="metric-label">Total consumed</div><div class="metric-val">${totalCal.toLocaleString()}</div><div class="metric-sub">kcal this month</div></div>
+    <div class="metric"><div class="metric-label">Monthly net</div><div class="metric-val ${totalNet>0?'red':'green'}">${(totalNet>0?'+':'')+totalNet.toLocaleString()}</div><div class="metric-sub">kcal vs TDEE</div></div>
+    <div class="metric"><div class="metric-label">Est. fat change</div><div class="metric-val ${totalNet>0?'red':'green'}">${totalNet>=0?'+':''}${(totalNet/7700).toFixed(2)} kg</div><div class="metric-sub">7,700 kcal per kg</div></div>
+  `;
+
+  const allKeys=monthKeys(viewYear,viewMonth);
+  const tbody=allKeys.map(k=>{
+    const d=getDay(k);const td=getTDEE(k);const itd=isToday(k);
+    if(!hasData(k)) return`<tr class="clickable" onclick="jumpToLog('${k}')"><td>${shortDate(k)}${itd?' <span class="badge badge-blue">today</span>':''}</td><td colspan="4" style="color:var(--t3)">No data — click to log</td></tr>`;
+    const net=d.cal-td;
+    return`<tr class="clickable" onclick="jumpToLog('${k}')"><td>${shortDate(k)}${itd?' <span class="badge badge-blue">today</span>':''}</td><td>${d.steps>0?d.steps.toLocaleString():'—'}</td><td>${td.toLocaleString()}</td><td>${d.cal>0?d.cal.toLocaleString():'—'}</td><td style="color:${net>0?'var(--red)':'var(--green)'};font-weight:600">${d.cal>0?(net>0?'+':'')+net:''}</td></tr>`;
+  }).join('');
+  document.getElementById('ov-table').innerHTML=`<thead><tr><th>Date</th><th>Steps</th><th>TDEE</th><th>Consumed</th><th>Net</th></tr></thead><tbody>${tbody}</tbody>`;
+}
+function ovClickDay(k){ jumpToLog(k) }
+function jumpToLog(k){
+  selectedLogDate=k;
+  logViewYear=keyDate(k).getFullYear();
+  logViewMonth=keyDate(k).getMonth();
+  populateLogForm();
+  showPage('log',document.querySelectorAll('.nav-item')[1]);
+}
+
+// ─── Log calendar ─────────────────────────────────────────────────────────────
+function renderLogCalendar(){
+  document.getElementById('log-month-title').textContent=monthLabel(logViewYear,logViewMonth);
+  renderCalendar('log-cal-dows','log-cal-cells',logViewYear,logViewMonth,selectedLogDate,'selectLogDate');
+}
+
+// ─── Analysis ─────────────────────────────────────────────────────────────────
+function setAnalysisTab(tab){
+  analysisTab=tab;
+  document.getElementById('an-month-panel').style.display=tab==='month'?'block':'none';
+  document.getElementById('an-day-panel').style.display=tab==='day'?'block':'none';
+  document.getElementById('atab-month').classList.toggle('active',tab==='month');
+  document.getElementById('atab-day').classList.toggle('active',tab==='day');
+  renderAnalysis();
+}
+function anShiftMonth(dir){ anViewMonth+=dir;if(anViewMonth>11){anViewMonth=0;anViewYear++}else if(anViewMonth<0){anViewMonth=11;anViewYear--} renderAnalysis() }
+function anGoToday(){ anViewYear=NOW.getFullYear();anViewMonth=NOW.getMonth();renderAnalysis() }
+function anDayShiftMonth(dir){ anDayViewMonth+=dir;if(anDayViewMonth>11){anDayViewMonth=0;anDayViewYear++}else if(anDayViewMonth<0){anDayViewMonth=11;anDayViewYear--} renderAnalysis() }
+function anDayGoToday(){ anDayViewYear=NOW.getFullYear();anDayViewMonth=NOW.getMonth();selectedAnDay=todayKey();renderAnalysis() }
+function selectAnDay(k){ selectedAnDay=k;anDayViewYear=keyDate(k).getFullYear();anDayViewMonth=keyDate(k).getMonth();renderAnalysisDayPanel() }
+
+function mbarHTML(label,color,logged,target,unit){
+  const pct=target>0?Math.min(Math.round((logged/target)*100),150):0;
+  const dp=Math.min(pct,100);
+  const over=logged>target;
+  const diff=Math.abs(logged-target);
+  const sc=over?'var(--red)':pct>=85?'var(--green)':pct>=60?'var(--amber)':'var(--red)';
+  const st=logged===0?'not logged':over?`+${diff}${unit} over`:`${diff}${unit} to go`;
+  return`<div class="mbar"><div class="mbar-head"><span class="mbar-label" style="color:${color}">${label}</span><span class="mbar-nums"><span style="color:${sc};font-weight:600">${logged}${unit}</span> / ${target}${unit} <span style="color:${sc}">${st}</span></span></div><div class="mbar-track"><div class="mbar-fill" style="width:${dp}%;background:${color};opacity:${over?.5:.85}"></div></div></div>`;
+}
+
+function generateInsights(prot,carb,fat,context){
+  const{tp,tc,tf}=profile;
+  const ins=[];
+  if(prot===0&&carb===0&&fat===0){ins.push({t:'info',h:'No data',b:'Log food for this '+context+' to see insights.'});return ins}
+  const pp=tp>0?Math.round(prot/tp*100):0,cp=tc>0?Math.round(carb/tc*100):0,fp=tf>0?Math.round(fat/tf*100):0;
+  // Protein
+  if(pp>=90&&pp<=115) ins.push({t:'good',h:'Protein on target',b:`${prot}g of ${tp}g (${pp}%). Consistent protein intake supports muscle retention and satiety — well done.`});
+  else if(pp>115) ins.push({t:'warn',h:'Protein over target',b:`${prot}g vs ${tp}g target (${pp}%). Excess protein is rarely stored as fat, but if you want to reduce: swap one protein source for a higher-carb or fat option.`});
+  else if(pp>=60) ins.push({t:'warn',h:'Protein below target',b:`${prot}g of ${tp}g (${pp}%). You need ${tp-prot}g more — roughly ${Math.round((tp-prot)/25)} chicken breasts, ${Math.round((tp-prot)/13)} eggs, or ${Math.round((tp-prot)/9)*100}g Greek yoghurt.`});
+  else ins.push({t:'bad',h:'Protein significantly low',b:`Only ${prot}g of ${tp}g (${pp}%). Chronically low protein impairs muscle retention and recovery. Aim for ~${Math.round(tp/3)}g per meal across 3 meals.`});
+  // Carbs
+  if(cp>=90&&cp<=115) ins.push({t:'good',h:'Carbs on target',b:`${carb}g of ${tc}g (${cp}%). Carbohydrates fuel your walking and daily activity — you are well fuelled.`});
+  else if(cp>115) ins.push({t:'warn',h:'Carbs over target',b:`${carb}g vs ${tc}g (${cp}%). The ${carb-tc}g excess adds ~${Math.round((carb-tc)*4)} kcal. Consider trimming bread, rice, or snack foods.`});
+  else if(cp>=60) ins.push({t:'warn',h:'Carbs a little low',b:`${carb}g of ${tc}g (${cp}%). Low-moderate intake is manageable but can reduce energy for high-step days. Add ${tc-carb}g via rice, oats, fruit, or potato.`});
+  else ins.push({t:'bad',h:'Carbs well below target',b:`${carb}g of ${tc}g (${cp}%). Very low carb intake will limit your walking energy. A cup of cooked rice is ~45g carbs; a banana ~25g.`});
+  // Fat
+  if(fp>=85&&fp<=120) ins.push({t:'good',h:'Fat on target',b:`${fat}g of ${tf}g (${fp}%). Dietary fat supports hormones and fat-soluble vitamin absorption.`});
+  else if(fp>120) ins.push({t:'warn',h:'Fat over target',b:`${fat}g vs ${tf}g (${fp}%). At 9 kcal/g, the ${fat-tf}g excess contributes ~${Math.round((fat-tf)*9)} kcal. Review cooking oils, nuts, cheese, and sauces.`});
+  else if(fp>=50) ins.push({t:'warn',h:'Fat slightly below target',b:`${fat}g of ${tf}g (${fp}%). Add olive oil, avocado, eggs, or a small handful of mixed nuts.`});
+  else ins.push({t:'bad',h:'Fat very low',b:`${fat}g of ${tf}g (${fp}%). Chronically low fat can suppress testosterone and impair fat-soluble vitamin (A, D, E, K) absorption. One tablespoon of olive oil is ~14g fat.`});
+  return ins;
+}
+
+function foodSuggestionsHTML(remP,remC,remF){
+  if(remP<=0&&remC<=0&&remF<=0) return`<p style="color:var(--green);font-size:14px">All three macro targets hit. Great day.</p>`;
+  let html='<div class="food-grid">';
+  if(remP>0){
+    html+=`<div class="food-card" style="background:var(--pdim);border:1px solid rgba(157,125,234,.2)"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--purple);margin-bottom:.5rem">Need ${remP}g more protein</div>`;
+    if(remP>=25) html+=`<div style="color:var(--t2);margin-bottom:3px">• ~${Math.round(remP/31)*100}g chicken breast</div>`;
+    if(remP>=13) html+=`<div style="color:var(--t2);margin-bottom:3px">• ${Math.round(remP/13)} whole egg(s)</div>`;
+    if(remP>=9) html+=`<div style="color:var(--t2);margin-bottom:3px">• ${Math.round(remP/9)*100}g Greek yoghurt</div>`;
+    if(remP>=25) html+=`<div style="color:var(--t2);margin-bottom:3px">• ${Math.round(remP/25)*100}g canned tuna</div>`;
+    html+='</div>';
+  }
+  if(remC>0){
+    html+=`<div class="food-card" style="background:var(--adim);border:1px solid rgba(245,166,35,.2)"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-bottom:.5rem">Need ${remC}g more carbs</div>`;
+    if(remC>=45) html+=`<div style="color:var(--t2);margin-bottom:3px">• ${Math.round(remC/45)} cup(s) cooked rice</div>`;
+    if(remC>=30) html+=`<div style="color:var(--t2);margin-bottom:3px">• ${Math.round(remC/30)} medium banana(s)</div>`;
+    if(remC>=25) html+=`<div style="color:var(--t2);margin-bottom:3px">• ${Math.round(remC/25)*40}g rolled oats</div>`;
+    if(remC>=20) html+=`<div style="color:var(--t2);margin-bottom:3px">• ${Math.round(remC/20)} slice(s) wholegrain bread</div>`;
+    html+='</div>';
+  }
+  if(remF>0){
+    html+=`<div class="food-card" style="background:var(--rdim);border:1px solid rgba(240,90,90,.2)"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--red);margin-bottom:.5rem">Need ${remF}g more fat</div>`;
+    if(remF>=14) html+=`<div style="color:var(--t2);margin-bottom:3px">• ${Math.round(remF/14)} tbsp olive oil</div>`;
+    if(remF>=15) html+=`<div style="color:var(--t2);margin-bottom:3px">• ${Math.round(remF/15)*20}g mixed nuts</div>`;
+    if(remF>=8) html+=`<div style="color:var(--t2);margin-bottom:3px">• ${Math.round(remF/8)} egg yolk(s)</div>`;
+    if(remF>=15) html+=`<div style="color:var(--t2);margin-bottom:3px">• ${Math.round(remF/15)*50}g avocado</div>`;
+    html+='</div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+function renderAnalysisMonthPanel(){
+  const{tp,tc,tf}=profile;
+  document.getElementById('an-month-title').textContent=monthLabel(anViewYear,anViewMonth);
+  document.getElementById('an-prot-target').textContent=tp+'g protein';
+  document.getElementById('an-carb-target').textContent=tc+'g carbs';
+  document.getElementById('an-fat-target').textContent=tf+'g fat';
+
+  const keys=monthKeys(anViewYear,anViewMonth).filter(hasData);
+  const n=keys.length||1;
+  const avgP=Math.round(keys.reduce((s,k)=>s+getDay(k).prot,0)/n);
+  const avgC=Math.round(keys.reduce((s,k)=>s+getDay(k).carb,0)/n);
+  const avgF=Math.round(keys.reduce((s,k)=>s+getDay(k).fat,0)/n);
+  const pp=Math.min(Math.round(avgP/tp*100),100),cp=Math.min(Math.round(avgC/tc*100),100),fp=Math.min(Math.round(avgF/tf*100),100);
+  const score=Math.round((pp+cp+fp)/3);
+  const sc=score>=85?'var(--green)':score>=60?'var(--amber)':'var(--red)';
+
+  document.getElementById('an-month-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Macro score</div><div class="metric-val" style="color:${sc}">${keys.length>0?score+'%':'—'}</div><div class="metric-sub">${keys.length} days logged</div></div>
+    <div class="metric"><div class="metric-label">Avg protein</div><div class="metric-val purple">${avgP}g</div><div class="metric-sub">target ${tp}g (${Math.round(avgP/tp*100)}%)</div></div>
+    <div class="metric"><div class="metric-label">Avg carbs</div><div class="metric-val amber">${avgC}g</div><div class="metric-sub">target ${tc}g (${Math.round(avgC/tc*100)}%)</div></div>
+    <div class="metric"><div class="metric-label">Avg fat</div><div class="metric-val red">${avgF}g</div><div class="metric-sub">target ${tf}g (${Math.round(avgF/tf*100)}%)</div></div>
+  `;
+
+  // Radar
+  if(charts.radar) charts.radar.destroy();
+  charts.radar=new Chart(document.getElementById('an-radar'),{
+    type:'radar',
+    data:{labels:['Protein','Carbs','Fat'],datasets:[
+      {label:'You',data:[pp,cp,fp],backgroundColor:'rgba(91,156,246,.15)',borderColor:'#5b9cf6',pointBackgroundColor:'#5b9cf6',pointRadius:4,borderWidth:2},
+      {label:'Target',data:[100,100,100],backgroundColor:'transparent',borderColor:'rgba(255,255,255,.1)',pointBackgroundColor:'rgba(255,255,255,.2)',pointRadius:3,borderWidth:1,borderDash:[4,3]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{min:0,max:100,ticks:{display:false},grid:{color:'rgba(255,255,255,.07)'},pointLabels:{color:'#9898a6',font:{size:12}},angleLines:{color:'rgba(255,255,255,.06)'}}}}
+  });
+
+  document.getElementById('an-month-bars').innerHTML=mbarHTML('Protein','#9d7dea',avgP,tp,'g')+mbarHTML('Carbohydrates','#f5a623',avgC,tc,'g')+mbarHTML('Fat','#f05a5a',avgF,tf,'g');
+
+  const ins=generateInsights(avgP,avgC,avgF,'month');
+  document.getElementById('an-month-insights').innerHTML=ins.map(i=>`<div class="ic ${i.t}"><div class="ic-title">${i.h}</div><div class="ic-body">${i.b}</div></div>`).join('');
+
+  // Heatmap
+  const allKeys=monthKeys(anViewYear,anViewMonth);
+  const heatRows=allKeys.map(k=>{
+    const d=getDay(k);const itd=isToday(k);
+    if(!hasData(k)) return`<tr class="clickable" onclick="selectAnDay('${k}');setAnalysisTab('day')"><td>${shortDate(k)}${itd?' <span class="badge badge-blue">today</span>':''}</td><td colspan="3" style="color:var(--t3)">No data</td></tr>`;
+    const ppct=tp>0?Math.min(Math.round(d.prot/tp*100),150):0,cpct=tc>0?Math.min(Math.round(d.carb/tc*100),150):0,fpct=tf>0?Math.min(Math.round(d.fat/tf*100),150):0;
+    const cell=(v,pct)=>{
+      const bg=pct>=90&&pct<=115?'rgba(34,201,138,.18)':pct>=70?'rgba(245,166,35,.18)':'rgba(240,90,90,.18)';
+      const col=pct>=90&&pct<=115?'var(--green)':pct>=70?'var(--amber)':'var(--red)';
+      return`<td style="background:${bg}"><span style="color:${col};font-weight:600">${v}g</span> <span style="font-size:10px;color:var(--t3)">${pct}%</span></td>`;
+    };
+    return`<tr class="clickable" onclick="selectAnDay('${k}');setAnalysisTab('day')"><td>${shortDate(k)}${itd?' <span class="badge badge-blue">today</span>':''}</td>${cell(d.prot,ppct)}${cell(d.carb,cpct)}${cell(d.fat,fpct)}</tr>`;
+  }).join('');
+  document.getElementById('an-heatmap').innerHTML=`<thead><tr><th>Date</th><th>Protein / ${tp}g</th><th>Carbs / ${tc}g</th><th>Fat / ${tf}g</th></tr></thead><tbody>${heatRows}</tbody>`;
+}
+
+function renderAnalysisDayPanel(){
+  document.getElementById('an-day-month-title').textContent=monthLabel(anDayViewYear,anDayViewMonth);
+  renderCalendar('an-day-dows','an-day-cells',anDayViewYear,anDayViewMonth,selectedAnDay,'selectAnDay');
+
+  const{tp,tc,tf}=profile;
+  const d=getDay(selectedAnDay);
+  const pp=tp>0?Math.round(d.prot/tp*100):0,cp=tc>0?Math.round(d.carb/tc*100):0,fp=tf>0?Math.round(d.fat/tf*100):0;
+  const score=d.cal>0?Math.round((Math.min(pp,100)+Math.min(cp,100)+Math.min(fp,100))/3):0;
+  const sc=score>=85?'var(--green)':score>=60?'var(--amber)':'var(--red)';
+  const kd=keyDate(selectedAnDay);
+  const label=kd.toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+
+  document.getElementById('an-day-progress-title').textContent='Progress — '+label;
+  document.getElementById('an-day-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Macro score</div><div class="metric-val" style="color:${sc}">${d.cal>0?score+'%':'—'}</div><div class="metric-sub">${d.cal>0?(score>=85?'On track':score>=60?'Getting there':'Needs work'):'No data logged'}</div></div>
+    <div class="metric"><div class="metric-label">Protein</div><div class="metric-val purple">${d.prot}g</div><div class="metric-sub">of ${tp}g (${pp}%)</div></div>
+    <div class="metric"><div class="metric-label">Carbs</div><div class="metric-val amber">${d.carb}g</div><div class="metric-sub">of ${tc}g (${cp}%)</div></div>
+    <div class="metric"><div class="metric-label">Fat</div><div class="metric-val red">${d.fat}g</div><div class="metric-sub">of ${tf}g (${fp}%)</div></div>
+  `;
+
+  document.getElementById('an-day-bars').innerHTML=mbarHTML('Protein','#9d7dea',d.prot,tp,'g')+mbarHTML('Carbohydrates','#f5a623',d.carb,tc,'g')+mbarHTML('Fat','#f05a5a',d.fat,tf,'g')+(d.fib>0?mbarHTML('Fibre','#22c98a',d.fib,30,'g'):'');
+
+  const ins=generateInsights(d.prot,d.carb,d.fat,'day');
+  document.getElementById('an-day-insights').innerHTML=ins.map(i=>`<div class="ic ${i.t}"><div class="ic-title">${i.h}</div><div class="ic-body">${i.b}</div></div>`).join('');
+  document.getElementById('an-day-food').innerHTML=foodSuggestionsHTML(Math.max(0,tp-d.prot),Math.max(0,tc-d.carb),Math.max(0,tf-d.fat));
+}
+
+function renderAnalysis(){
+  if(analysisTab==='month') renderAnalysisMonthPanel();
+  else renderAnalysisDayPanel();
+}
+
+// ─── Charts ───────────────────────────────────────────────────────────────────
+function chShiftMonth(dir){ chViewMonth+=dir;if(chViewMonth>11){chViewMonth=0;chViewYear++}else if(chViewMonth<0){chViewMonth=11;chViewYear--} renderCharts() }
+function chGoToday(){ chViewYear=NOW.getFullYear();chViewMonth=NOW.getMonth();renderCharts() }
+
+function renderCharts(){
+  document.getElementById('ch-month-title').textContent=monthLabel(chViewYear,chViewMonth);
+  const keys=monthKeys(chViewYear,chViewMonth);
+  const loggedKeys=keys.filter(hasData);
+  const n=loggedKeys.length||1;
+
+  const totP=loggedKeys.reduce((s,k)=>s+getDay(k).prot,0);
+  const totC=loggedKeys.reduce((s,k)=>s+getDay(k).carb,0);
+  const totF=loggedKeys.reduce((s,k)=>s+getDay(k).fat,0);
+  const totFib=loggedKeys.reduce((s,k)=>s+getDay(k).fib,0);
+  const avgP=Math.round(totP/n),avgC=Math.round(totC/n),avgF=Math.round(totF/n);
+  const macroTotal=totP+totC+totF+totFib||1;
+
+  document.getElementById('ch-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Avg protein</div><div class="metric-val purple">${avgP}g</div><div class="metric-sub">target ${profile.tp}g</div></div>
+    <div class="metric"><div class="metric-label">Avg carbs</div><div class="metric-val amber">${avgC}g</div><div class="metric-sub">target ${profile.tc}g</div></div>
+    <div class="metric"><div class="metric-label">Avg fat</div><div class="metric-val red">${avgF}g</div><div class="metric-sub">target ${profile.tf}g</div></div>
+    <div class="metric"><div class="metric-label">Protein %</div><div class="metric-val">${Math.round((totP/macroTotal)*100)}%</div><div class="metric-sub">of total macros</div></div>
+  `;
+
+  const tc2='#666',gc='rgba(255,255,255,.06)';
+  const labels=keys.map(k=>{ const d=keyDate(k);return d.getDate()+'/'+( d.getMonth()+1)});
+
+  if(charts.donut) charts.donut.destroy();
+  charts.donut=new Chart(document.getElementById('ch-donut'),{type:'doughnut',data:{labels:['Protein','Carbs','Fat','Fibre'],datasets:[{data:[totP,totC,totF,totFib],backgroundColor:['#9d7dea','#f5a623','#f05a5a','#22c98a'],borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const p=Math.round((c.parsed/macroTotal)*100);return`${c.label}: ${c.parsed}g (${p}%)`}}}}}});
+
+  const tdees=keys.map(k=>hasData(k)?getTDEE(k):null);
+  const cals=keys.map(k=>{ const d=getDay(k);return d.cal>0?d.cal:null});
+  if(charts.calch) charts.calch.destroy();
+  charts.calch=new Chart(document.getElementById('ch-cal'),{type:'bar',data:{labels,datasets:[{label:'TDEE',data:tdees,backgroundColor:'rgba(34,201,138,.5)',borderRadius:3},{label:'Consumed',data:cals,backgroundColor:'rgba(91,156,246,.65)',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y!==null?c.parsed.y.toLocaleString()+' kcal':'—'}`}}},scales:{x:{ticks:{color:tc2,font:{size:9}},grid:{display:false}},y:{ticks:{color:tc2,font:{size:9},callback:v=>v.toLocaleString()},grid:{color:gc},beginAtZero:true}}}});
+
+  if(charts.trend) charts.trend.destroy();
+  charts.trend=new Chart(document.getElementById('ch-trend'),{type:'line',data:{labels,datasets:[{label:'Protein',data:keys.map(k=>getDay(k).prot||null),borderColor:'#9d7dea',backgroundColor:'transparent',tension:.35,pointRadius:3,pointBackgroundColor:'#9d7dea'},{label:'Carbs',data:keys.map(k=>getDay(k).carb||null),borderColor:'#f5a623',backgroundColor:'transparent',tension:.35,pointRadius:3,pointBackgroundColor:'#f5a623',borderDash:[4,3]},{label:'Fat',data:keys.map(k=>getDay(k).fat||null),borderColor:'#f05a5a',backgroundColor:'transparent',tension:.35,pointRadius:3,pointBackgroundColor:'#f05a5a',borderDash:[2,2]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y!==null?c.parsed.y+'g':'—'}`}}},scales:{x:{ticks:{color:tc2,font:{size:9}},grid:{display:false}},y:{ticks:{color:tc2,font:{size:9},callback:v=>v+'g'},grid:{color:gc},beginAtZero:true}}}});
+
+  const nets=keys.map(k=>{ const d=getDay(k);return d.cal>0?d.cal-getTDEE(k):null});
+  if(charts.netch) charts.netch.destroy();
+  charts.netch=new Chart(document.getElementById('ch-net'),{type:'bar',data:{labels,datasets:[{label:'Net',data:nets,backgroundColor:nets.map(n=>n===null?'transparent':n>0?'rgba(240,90,90,.75)':'rgba(34,201,138,.6)'),borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const v=c.parsed.y;return v===null?'No data':(v>0?'Surplus +':'Deficit ')+v.toLocaleString()+' kcal'}}}},scales:{x:{ticks:{color:tc2,font:{size:9}},grid:{display:false}},y:{ticks:{color:tc2,font:{size:9},callback:v=>(v>0?'+':'')+v.toLocaleString()},grid:{color:gc}}}}});
+}
+
+// ─── Maintenance ──────────────────────────────────────────────────────────────
+function renderMaintenance(){
+  const bmr=getBMR();
+  document.getElementById('mn-formula').innerHTML=`BMR (Mifflin-St Jeor): <strong>${bmr.toLocaleString()} kcal</strong> &nbsp;+&nbsp; steps × ${profile.kcalStep.toFixed(3)} kcal &nbsp;+&nbsp; exercise burn = daily TDEE`;
+  document.getElementById('p-formula').innerHTML=`BMR: <strong>${bmr.toLocaleString()} kcal</strong> &nbsp;|&nbsp; 10,000 steps ≈ <strong>${Math.round(10000*profile.kcalStep)} kcal</strong>`;
+
+  const y=NOW.getFullYear(),m=NOW.getMonth();
+  const keys=monthKeys(y,m).filter(hasData);
+  const n=keys.length||1;
+  const totalNet=keys.reduce((s,k)=>s+(getDay(k).cal-getTDEE(k)),0);
+  const totalMaint=keys.reduce((s,k)=>s+getTDEE(k),0);
+  const totalCal=keys.reduce((s,k)=>s+getDay(k).cal,0);
+  const avgMaint=Math.round(totalMaint/n);
+
+  document.getElementById('mn-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">BMR</div><div class="metric-val">${bmr.toLocaleString()}</div><div class="metric-sub">kcal at rest</div></div>
+    <div class="metric"><div class="metric-label">Avg daily TDEE</div><div class="metric-val blue">${avgMaint.toLocaleString()}</div><div class="metric-sub">this month</div></div>
+    <div class="metric"><div class="metric-label">Monthly net</div><div class="metric-val ${totalNet>0?'red':'green'}">${(totalNet>0?'+':'')+totalNet.toLocaleString()}</div><div class="metric-sub">kcal vs TDEE</div></div>
+    <div class="metric"><div class="metric-label">Est. fat change</div><div class="metric-val ${totalNet>0?'red':'green'}">${totalNet>=0?'+':''}${(totalNet/7700).toFixed(2)} kg</div><div class="metric-sub">this month</div></div>
+  `;
+  document.getElementById('mn-surplus').innerHTML=`
+    <div class="metric"><div class="metric-label">Total maintenance</div><div class="metric-val">${totalMaint.toLocaleString()}</div><div class="metric-sub">kcal needed (logged days)</div></div>
+    <div class="metric"><div class="metric-label">Total consumed</div><div class="metric-val">${totalCal.toLocaleString()}</div><div class="metric-sub">kcal eaten</div></div>
+    <div class="metric"><div class="metric-label">Monthly surplus</div><div class="metric-val ${totalNet>=0?'red':'green'}">${totalNet>=0?'+':''}${totalNet.toLocaleString()}</div><div class="metric-sub">kcal vs TDEE</div></div>
+    <div class="metric"><div class="metric-label">Fat stored/lost</div><div class="metric-val ${totalNet>=0?'red':'green'}">${totalNet>=0?'+':''}${(totalNet/7700).toFixed(2)} kg</div><div class="metric-sub">est.</div></div>
+  `;
+
+  const allKeys=monthKeys(y,m);
+  const labels=allKeys.map(k=>{ const d=keyDate(k);return d.getDate()+'/'+( d.getMonth()+1)});
+  const tdees=allKeys.map(k=>hasData(k)?getTDEE(k):null);
+  const cals=allKeys.map(k=>{ const d=getDay(k);return d.cal>0?d.cal:null});
+  const nets=allKeys.map(k=>{ const d=getDay(k);return d.cal>0?d.cal-getTDEE(k):null});
+  const tc2='#666',gc='rgba(255,255,255,.06)';
+  if(charts.maint) charts.maint.destroy();
+  charts.maint=new Chart(document.getElementById('mn-chart'),{type:'bar',data:{labels,datasets:[{label:'TDEE',data:tdees,backgroundColor:'rgba(34,201,138,.45)',borderRadius:3},{label:'Consumed',data:cals,backgroundColor:'rgba(91,156,246,.6)',borderRadius:3},{label:'Net',data:nets,backgroundColor:nets.map(n=>n===null?'transparent':n>0?'rgba(240,90,90,.75)':'rgba(157,125,234,.55)'),borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y!==null?c.parsed.y.toLocaleString()+' kcal':'—'}`}}},scales:{x:{ticks:{color:tc2,font:{size:9}},grid:{display:false}},y:{ticks:{color:tc2,font:{size:9},callback:v=>v.toLocaleString()},grid:{color:gc},beginAtZero:true}}}});
+}
+
+// ─── History ──────────────────────────────────────────────────────────────────
+function renderHistory(){
+  const allKeys=Object.keys(dayData).filter(k=>dayData[k]&&hasData(k)).sort().reverse();
+  if(allKeys.length===0){ document.getElementById('hist-list').innerHTML='<div style="padding:1.5rem;color:var(--t3);font-size:14px;text-align:center">No days logged yet.</div>';return }
+
+  // Group by month
+  const groups={};
+  allKeys.forEach(k=>{ const ym=k.slice(0,7); if(!groups[ym]) groups[ym]=[]; groups[ym].push(k) });
+
+  let html='';
+  Object.keys(groups).sort().reverse().forEach(ym=>{
+    const [y,m]=ym.split('-').map(Number);
+    html+=`<div class="hist-month-label">${new Date(y,m-1,1).toLocaleDateString('en-AU',{month:'long',year:'numeric'})}</div>`;
+    html+=`<table class="t" style="margin-bottom:.5rem"><thead><tr><th>Date</th><th>Steps</th><th>Consumed</th><th>Net</th><th>Protein</th><th>Carbs</th><th>Fat</th></tr></thead><tbody>`;
+    groups[ym].forEach(k=>{
+      const d=getDay(k),td=getTDEE(k),net=d.cal>0?d.cal-td:null;
+      const nc=net===null?'var(--t3)':net>0?'var(--red)':'var(--green)';
+      const itd=isToday(k);
+      html+=`<tr class="clickable" onclick="jumpToLog('${k}')"><td>${shortDate(k)}${itd?' <span class="badge badge-blue">today</span>':''}</td><td>${d.steps>0?d.steps.toLocaleString():'—'}</td><td>${d.cal>0?d.cal.toLocaleString():' —'}</td><td style="color:${nc};font-weight:600">${net!==null?(net>0?'+':'')+net.toLocaleString():'—'}</td><td style="color:var(--purple)">${d.prot>0?d.prot+'g':'—'}</td><td style="color:var(--amber)">${d.carb>0?d.carb+'g':'—'}</td><td style="color:var(--red)">${d.fat>0?d.fat+'g':'—'}</td></tr>`;
+    });
+    html+='</tbody></table>';
+  });
+  document.getElementById('hist-list').innerHTML=html;
+}
+
+// ─── Data IO ──────────────────────────────────────────────────────────────────
+function exportData(){
+  const blob=new Blob([JSON.stringify({version:2,profile,dayData},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cal-tracker-export.json';a.click();toast('Exported');
+}
+function importTrigger(){ document.getElementById('import-file').click() }
+function importData(el){
+  const f=el.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const p=JSON.parse(e.target.result);
+      if(p.profile) profile={...profile,...p.profile};
+      // Support both old weekData format and new dayData format
+      if(p.dayData) dayData={...dayData,...p.dayData};
+      save();load();renderAll();toast('Imported');
+    }catch{toast('Import failed — check file format')}
+  };
+  r.readAsText(f);
+}
+function clearMonth(){
+  if(!confirm('Clear all data for the current month?')) return;
+  monthKeys(NOW.getFullYear(),NOW.getMonth()).forEach(k=>delete dayData[k]);
+  save();renderAll();toast('Current month cleared');
+}
+function clearAll(){
+  if(!confirm('Delete ALL logged data permanently? Profile settings are kept.')) return;
+  dayData={};save();renderAll();toast('All data cleared');
+}
+function toast(msg){ const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400) }
+
+// ─── renderAll ────────────────────────────────────────────────────────────────
+function renderAll(){
+  renderOverview();
+  renderLogCalendar();
+  renderAnalysis();
+  renderCharts();
+  renderMaintenance();
+  renderHistory();
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+load();
+selectedLogDate=todayKey();
+selectedAnDay=todayKey();
+populateLogForm();
+renderAll();
+</script>
+</body>
+</html>
