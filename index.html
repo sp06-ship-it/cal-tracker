@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cal — calorie tracker</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{
   --bg:#0e0e10;--surface:#18181b;--surface2:#222226;--surface3:#2a2a2f;
@@ -141,6 +142,30 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .badge-blue{background:var(--bdim);color:var(--blue)}
 .badge-red{background:var(--rdim);color:var(--red)}
 
+/* Streak / consistency */
+.streak-hero{display:flex;gap:16px;margin-bottom:1.5rem;flex-wrap:wrap}
+.streak-card{flex:1;min-width:140px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:4px}
+.streak-card.featured{border-color:var(--green);background:var(--gdim)}
+.streak-num{font-size:48px;font-weight:700;letter-spacing:-2px;line-height:1}
+.streak-label{font-size:12px;color:var(--t2);text-transform:uppercase;letter-spacing:.06em}
+.streak-sub{font-size:11px;color:var(--t3);margin-top:2px}
+.heatmap-wrap{overflow-x:auto;padding-bottom:.5rem}
+.heatmap{display:flex;gap:3px;align-items:flex-end}
+.heatmap-col{display:flex;flex-direction:column;gap:3px}
+.heatmap-cell{width:13px;height:13px;border-radius:3px;flex-shrink:0;cursor:default;transition:opacity .1s}
+.heatmap-cell:hover{opacity:.75}
+.heatmap-month-labels{display:flex;gap:3px;margin-bottom:4px}
+.heatmap-month-label{font-size:9px;color:var(--t3);letter-spacing:.04em}
+.heatmap-dow-labels{display:flex;flex-direction:column;gap:3px;margin-right:4px;padding-top:0}
+.heatmap-dow-label{font-size:9px;color:var(--t3);height:13px;display:flex;align-items:center}
+.month-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.month-bar-name{font-size:12px;color:var(--t2);width:80px;flex-shrink:0}
+.month-bar-track{flex:1;height:7px;background:var(--surface3);border-radius:4px;overflow:hidden}
+.month-bar-fill{height:100%;border-radius:4px;transition:width .3s}
+.month-bar-pct{font-size:11px;color:var(--t3);width:36px;text-align:right;flex-shrink:0}
+.nudge{background:var(--adim);border:1px solid rgba(245,166,35,.2);border-radius:var(--r);padding:.875rem 1rem;font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:1.25rem}
+.nudge strong{color:var(--amber)}
+
 /* Hint */
 .hint{background:var(--bdim);border:1px solid rgba(91,156,246,.2);border-radius:var(--r);padding:.75rem 1rem;font-size:12px;color:var(--t2);line-height:1.7;margin-top:1rem}
 .hint code{font-family:monospace;background:var(--surface3);padding:1px 5px;border-radius:4px;font-size:11px}
@@ -156,7 +181,18 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 /* History list */
 .hist-month-label{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;padding:.5rem .75rem;margin-top:.5rem}
 
-::-webkit-scrollbar{width:6px}
+/* Drive sync */
+.drive-status{display:flex;align-items:center;gap:10px;padding:.75rem 1rem;border-radius:var(--r);font-size:13px;margin-top:1rem}
+.drive-status.connected{background:var(--gdim);border:1px solid rgba(34,201,138,.2);color:var(--green)}
+.drive-status.disconnected{background:var(--surface2);border:1px solid var(--border);color:var(--t2)}
+.drive-status.syncing{background:var(--bdim);border:1px solid rgba(91,156,246,.2);color:var(--blue)}
+.drive-status.error{background:var(--rdim);border:1px solid rgba(240,90,90,.2);color:var(--red)}
+.drive-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.drive-status.connected .drive-dot{background:var(--green)}
+.drive-status.disconnected .drive-dot{background:var(--t3)}
+.drive-status.syncing .drive-dot{background:var(--blue);animation:pulse 1s infinite}
+.drive-status.error .drive-dot{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px}
 
@@ -199,6 +235,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   <button class="nav-item" onclick="showPage('history',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><polyline points="12 6 12 12 16 14"/></svg>
     History
+  </button>
+  <button class="nav-item" onclick="showPage('consistency',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Consistency
   </button>
   <div class="nav-sep">Settings</div>
   <button class="nav-item" onclick="showPage('profile',this)">
@@ -372,6 +412,41 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   </div>
 </div>
 
+<!-- CONSISTENCY -->
+<div class="page" id="page-consistency">
+  <div class="page-title">Consistency</div>
+  <div class="page-sub">Your logging streak and long-term habit data.</div>
+  <div id="cs-nudge"></div>
+  <div class="streak-hero" id="cs-hero"></div>
+  <div class="card">
+    <div class="card-title">All-time logging heatmap</div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:.875rem">Each square is one day. <span style="color:var(--green)">&#9632;</span> logged &nbsp; <span style="color:var(--surface3)">&#9632;</span> not logged</div>
+    <div style="display:flex;gap:4px">
+      <div style="display:flex;flex-direction:column;gap:3px;margin-right:2px;padding-top:18px">
+        <div class="heatmap-dow-label">Mon</div>
+        <div class="heatmap-dow-label"></div>
+        <div class="heatmap-dow-label">Wed</div>
+        <div class="heatmap-dow-label"></div>
+        <div class="heatmap-dow-label">Fri</div>
+        <div class="heatmap-dow-label"></div>
+        <div class="heatmap-dow-label">Sun</div>
+      </div>
+      <div class="heatmap-wrap" id="cs-heatmap-wrap">
+        <div id="cs-heatmap-month-row" class="heatmap-month-labels"></div>
+        <div id="cs-heatmap" class="heatmap"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Monthly consistency</div>
+    <div id="cs-month-bars"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Streak history</div>
+    <div id="cs-streak-history" style="font-size:13px;color:var(--t2)"></div>
+  </div>
+</div>
+
 <!-- PROFILE -->
 <div class="page" id="page-profile">
   <div class="page-title">Profile</div>
@@ -400,6 +475,19 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
       <div class="field"><label>Kcal per step</label><input type="number" id="p-ks" value="0.045" step="0.001" min="0.01" max="0.12" oninput="saveProfile()"></div>
     </div>
     <div class="formula" style="margin-top:.875rem" id="p-formula"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Google Drive sync</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:.875rem;line-height:1.6">Sign in once and your data auto-saves to a file called <code style="font-family:monospace;background:var(--surface3);padding:1px 5px;border-radius:4px;font-size:11px">cal-tracker-data.json</code> in your Google Drive every time you log a day. It loads automatically on startup so your data follows you across devices and browsers.</div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="drive-signin-btn" onclick="driveSignIn()">Sign in with Google</button>
+      <button class="btn" id="drive-signout-btn" onclick="driveSignOut()" style="display:none">Sign out</button>
+      <button class="btn" id="drive-sync-btn" onclick="driveSyncNow()" style="display:none">Sync now</button>
+    </div>
+    <div class="drive-status disconnected" id="drive-status">
+      <div class="drive-dot"></div>
+      <span id="drive-status-text">Not connected — sign in to enable cloud sync</span>
+    </div>
   </div>
   <div class="card">
     <div class="card-title">Data</div>
@@ -466,6 +554,8 @@ function isToday(k){ return k===todayKey() }
 function save(){
   localStorage.setItem('cal2_profile',JSON.stringify(profile));
   localStorage.setItem('cal2_days',JSON.stringify(dayData));
+  // Auto-push to Drive if signed in (fire and forget)
+  if(driveToken) driveSave();
 }
 function load(){
   const p=localStorage.getItem('cal2_profile');
@@ -918,6 +1008,166 @@ function renderHistory(){
   document.getElementById('hist-list').innerHTML=html;
 }
 
+// ─── Google Drive sync ────────────────────────────────────────────────────────
+const CLIENT_ID = '841500265974-1ed5dbiljquerma1cn64p7c2c7qq16ku.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const DRIVE_FILENAME = 'cal-tracker-data.json';
+
+let driveToken = null;
+let driveFileId = localStorage.getItem('cal2_drive_file_id') || null;
+let driveLastSync = localStorage.getItem('cal2_drive_last_sync') || null;
+let tokenClient = null;
+
+function driveInit(){
+  if(typeof google === 'undefined') return;
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPES,
+    callback: async (resp) => {
+      if(resp.error){ driveSetStatus('error','Sign-in failed: '+resp.error); return; }
+      driveToken = resp.access_token;
+      localStorage.setItem('cal2_drive_token_hint','yes');
+      driveSetStatus('syncing','Signed in — loading data from Drive…');
+      updateDriveButtons();
+      await driveLoadOrCreate();
+    }
+  });
+  // If user previously signed in, try silent restore
+  if(localStorage.getItem('cal2_drive_token_hint')==='yes'){
+    driveSetStatus('syncing','Restoring session…');
+    tokenClient.requestAccessToken({prompt:''});
+  }
+}
+
+function driveSignIn(){
+  if(!tokenClient){ driveSetStatus('error','Google sign-in not loaded yet — try refreshing'); return; }
+  tokenClient.requestAccessToken({prompt:'consent'});
+}
+
+function driveSignOut(){
+  if(driveToken) google.accounts.oauth2.revoke(driveToken);
+  driveToken=null;
+  localStorage.removeItem('cal2_drive_token_hint');
+  driveSetStatus('disconnected','Signed out — data still saved locally');
+  updateDriveButtons();
+}
+
+async function driveLoadOrCreate(){
+  try{
+    // Search for existing file
+    if(!driveFileId){
+      const res = await fetch(
+        `https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FILENAME}'+and+trashed=false&spaces=drive&fields=files(id,name,modifiedTime)`,
+        {headers:{Authorization:'Bearer '+driveToken}}
+      );
+      const data = await res.json();
+      if(data.files && data.files.length > 0){
+        driveFileId = data.files[0].id;
+        localStorage.setItem('cal2_drive_file_id', driveFileId);
+      }
+    }
+
+    if(driveFileId){
+      // File exists — download and merge
+      const res = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`,
+        {headers:{Authorization:'Bearer '+driveToken}}
+      );
+      const remote = await res.json();
+      if(remote.profile) profile = {...profile, ...remote.profile};
+      if(remote.dayData){
+        // Merge: remote wins on conflict (Drive is source of truth)
+        dayData = {...dayData, ...remote.dayData};
+      }
+      save();
+      syncProfileInputs();
+      renderAll();
+      const syncTime = new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+      driveLastSync = syncTime;
+      localStorage.setItem('cal2_drive_last_sync', syncTime);
+      driveSetStatus('connected','Synced from Drive — last sync '+syncTime);
+    } else {
+      // No file yet — create it
+      await driveSave();
+    }
+    updateDriveButtons();
+  } catch(e){
+    driveSetStatus('error','Sync failed: '+e.message);
+  }
+}
+
+async function driveSave(){
+  if(!driveToken) return;
+  const payload = JSON.stringify({version:2, profile, dayData});
+  const meta = {name: DRIVE_FILENAME, mimeType:'application/json'};
+  try{
+    let res;
+    if(driveFileId){
+      // Update existing file
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(meta)],{type:'application/json'}));
+      form.append('file', new Blob([payload],{type:'application/json'}));
+      res = await fetch(
+        `https://www.googleapis.com/upload/drive/v3/files/${driveFileId}?uploadType=multipart`,
+        {method:'PATCH', headers:{Authorization:'Bearer '+driveToken}, body:form}
+      );
+    } else {
+      // Create new file
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(meta)],{type:'application/json'}));
+      form.append('file', new Blob([payload],{type:'application/json'}));
+      res = await fetch(
+        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+        {method:'POST', headers:{Authorization:'Bearer '+driveToken}, body:form}
+      );
+      const created = await res.json();
+      if(created.id){
+        driveFileId = created.id;
+        localStorage.setItem('cal2_drive_file_id', driveFileId);
+      }
+    }
+    const syncTime = new Date().toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+    driveLastSync = syncTime;
+    localStorage.setItem('cal2_drive_last_sync', syncTime);
+    driveSetStatus('connected','Saved to Drive — last sync '+syncTime);
+  } catch(e){
+    driveSetStatus('error','Save failed: '+e.message);
+  }
+}
+
+async function driveSyncNow(){
+  if(!driveToken){ driveSetStatus('error','Not signed in'); return; }
+  driveSetStatus('syncing','Syncing…');
+  await driveSave();
+}
+
+function driveSetStatus(state, text){
+  const el = document.getElementById('drive-status');
+  const txt = document.getElementById('drive-status-text');
+  if(!el||!txt) return;
+  el.className = 'drive-status ' + state;
+  txt.textContent = text;
+}
+
+function updateDriveButtons(){
+  const signIn = document.getElementById('drive-signin-btn');
+  const signOut = document.getElementById('drive-signout-btn');
+  const syncBtn = document.getElementById('drive-sync-btn');
+  if(!signIn) return;
+  if(driveToken){
+    signIn.style.display = 'none';
+    signOut.style.display = '';
+    syncBtn.style.display = '';
+  } else {
+    signIn.style.display = '';
+    signOut.style.display = 'none';
+    syncBtn.style.display = 'none';
+  }
+}
+
+// Patch save() to also push to Drive after every local save
+const _localSave = save;
+
 // ─── Data IO ──────────────────────────────────────────────────────────────────
 function exportData(){
   const blob=new Blob([JSON.stringify({version:2,profile,dayData},null,2)],{type:'application/json'});
@@ -949,7 +1199,225 @@ function clearAll(){
 }
 function toast(msg){ const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400) }
 
-// ─── renderAll ────────────────────────────────────────────────────────────────
+// ─── Consistency ──────────────────────────────────────────────────────────────
+function computeStreaks(){
+  // Build sorted list of all logged date keys
+  const logged=new Set(Object.keys(dayData).filter(hasData));
+  const todayK=todayKey();
+
+  // Current streak — count backwards from today (or yesterday if today not logged yet)
+  let currentStreak=0;
+  let checkDate=new Date(NOW);
+  // If today isn't logged yet, start from yesterday so we don't break the streak display
+  if(!logged.has(todayK)){
+    checkDate.setDate(checkDate.getDate()-1);
+  }
+  while(true){
+    const k=dateKey(checkDate);
+    if(!logged.has(k)) break;
+    currentStreak++;
+    checkDate.setDate(checkDate.getDate()-1);
+  }
+
+  // Longest streak ever
+  let longestStreak=0,runLen=0,runStart=null,bestStart=null,bestEnd=null;
+  const allSorted=Array.from(logged).sort();
+  let prevDate=null;
+  allSorted.forEach(k=>{
+    const d=keyDate(k);
+    if(prevDate){
+      const diff=(d-prevDate)/86400000;
+      if(diff===1){ runLen++; }
+      else { if(runLen>longestStreak){longestStreak=runLen;bestStart=runStart;bestEnd=prevDate} runLen=1;runStart=d; }
+    } else { runLen=1;runStart=d; }
+    prevDate=d;
+  });
+  if(runLen>longestStreak){longestStreak=runLen;bestStart=runStart;bestEnd=prevDate}
+
+  // Days since last log
+  let daysSince=null;
+  if(allSorted.length>0){
+    const lastK=allSorted[allSorted.length-1];
+    const lastD=keyDate(lastK);
+    daysSince=Math.round((new Date(NOW.getFullYear(),NOW.getMonth(),NOW.getDate())-new Date(lastD.getFullYear(),lastD.getMonth(),lastD.getDate()))/86400000);
+  }
+
+  // Total logged
+  const totalLogged=allSorted.length;
+
+  // Streak runs for history list
+  const runs=[];
+  let rLen=0,rStart=null,rEnd=null;
+  prevDate=null;
+  allSorted.forEach(k=>{
+    const d=keyDate(k);
+    if(prevDate){
+      const diff=(d-prevDate)/86400000;
+      if(diff===1){ rLen++;rEnd=d; }
+      else{if(rLen>1)runs.push({len:rLen,start:rStart,end:rEnd});rLen=1;rStart=d;rEnd=d;}
+    } else{rLen=1;rStart=d;rEnd=d;}
+    prevDate=d;
+  });
+  if(rLen>1) runs.push({len:rLen,start:rStart,end:rEnd});
+  runs.sort((a,b)=>b.len-a.len);
+
+  return{currentStreak,longestStreak,bestStart,bestEnd,daysSince,totalLogged,allSorted,logged,runs};
+}
+
+function renderConsistency(){
+  const{currentStreak,longestStreak,bestStart,bestEnd,daysSince,totalLogged,allSorted,logged,runs}=computeStreaks();
+  const todayK=todayKey();
+  const todayLogged=logged.has(todayK);
+
+  // Nudge
+  const nudgeEl=document.getElementById('cs-nudge');
+  if(daysSince===null){
+    nudgeEl.innerHTML=`<div class="nudge"><strong>No days logged yet.</strong> Log your first day to start your streak.</div>`;
+  } else if(daysSince===0&&todayLogged){
+    nudgeEl.innerHTML='';
+  } else if(daysSince===1&&!todayLogged){
+    nudgeEl.innerHTML=`<div class="nudge"><strong>Log today to keep your ${currentStreak}-day streak alive.</strong> You logged yesterday — one more entry and you are still on track.</div>`;
+  } else if(daysSince>1){
+    nudgeEl.innerHTML=`<div class="nudge"><strong>It has been ${daysSince} day${daysSince>1?'s':''} since your last log.</strong> Streak is reset — but you can start a new one today. Every streak starts with one day.</div>`;
+  } else {
+    nudgeEl.innerHTML='';
+  }
+
+  // Hero cards
+  const streakColor=currentStreak>=7?'var(--green)':currentStreak>=3?'var(--amber)':'var(--t2)';
+  const streakEmoji=currentStreak>=30?'🔥':currentStreak>=14?'⚡':currentStreak>=7?'✦':'';
+  document.getElementById('cs-hero').innerHTML=`
+    <div class="streak-card featured">
+      <div class="streak-num" style="color:${streakColor}">${currentStreak}</div>
+      <div class="streak-label">Current streak ${streakEmoji}</div>
+      <div class="streak-sub">${todayLogged?'Today logged ✓':'Log today to extend it'}</div>
+    </div>
+    <div class="streak-card">
+      <div class="streak-num" style="color:var(--purple)">${longestStreak}</div>
+      <div class="streak-label">Longest streak</div>
+      <div class="streak-sub">${bestStart&&bestEnd?bestStart.toLocaleDateString('en-AU',{day:'numeric',month:'short'})+' – '+bestEnd.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}):totalLogged>0?'—':'No data yet'}</div>
+    </div>
+    <div class="streak-card">
+      <div class="streak-num" style="color:var(--blue)">${totalLogged}</div>
+      <div class="streak-label">Total days logged</div>
+      <div class="streak-sub">${totalLogged>0?'Since '+shortDate(allSorted[0]):'—'}</div>
+    </div>
+    <div class="streak-card">
+      <div class="streak-num" style="color:${daysSince===0?'var(--green)':daysSince>2?'var(--red)':'var(--amber)'}">${daysSince===null?'—':daysSince}</div>
+      <div class="streak-label">Days since last log</div>
+      <div class="streak-sub">${daysSince===0?'Logged today':daysSince===null?'Nothing logged yet':'Last: '+shortDate(allSorted[allSorted.length-1])}</div>
+    </div>
+  `;
+
+  // Heatmap — show last 52 weeks (364 days) ending today
+  const HEATMAP_WEEKS=52;
+  const endDate=new Date(NOW);
+  // Align end to Sunday (end of week)
+  const endDow=endDate.getDay(); // 0=Sun
+  // We'll use Mon-Sun weeks. End on the last Sunday.
+  const daysToLastSun=endDow===0?0:endDow;
+  endDate.setDate(endDate.getDate()+(7-daysToLastSun)%7);
+  const startDate=new Date(endDate);
+  startDate.setDate(endDate.getDate()-(HEATMAP_WEEKS*7-1));
+
+  // Build columns (each col = one week Mon–Sun)
+  let cols=[];
+  let monthLabels=[];
+  let cur=new Date(startDate);
+  let lastMonth=-1;
+  for(let w=0;w<HEATMAP_WEEKS;w++){
+    const col=[];
+    for(let dow=0;dow<7;dow++){
+      const k=dateKey(cur);
+      const inFuture=cur>NOW;
+      col.push({k,logged:logged.has(k),inFuture,date:new Date(cur)});
+      // Track month label position
+      if(cur.getMonth()!==lastMonth&&dow===0){
+        monthLabels.push({week:w,label:cur.toLocaleDateString('en-AU',{month:'short'})});
+        lastMonth=cur.getMonth();
+      }
+      cur.setDate(cur.getDate()+1);
+    }
+    cols.push(col);
+  }
+
+  // Month label row
+  let monthHTML='';
+  for(let w=0;w<HEATMAP_WEEKS;w++){
+    const lbl=monthLabels.find(m=>m.week===w);
+    monthHTML+=`<div class="heatmap-month-label" style="width:13px;flex-shrink:0">${lbl?lbl.label:''}</div>`;
+  }
+  document.getElementById('cs-heatmap-month-row').innerHTML=monthHTML;
+
+  // Cells
+  let hmHTML='';
+  cols.forEach(col=>{
+    hmHTML+='<div class="heatmap-col">';
+    col.forEach(cell=>{
+      let bg,title;
+      if(cell.inFuture){ bg='transparent'; title=''; }
+      else if(cell.logged){
+        const d=getDay(cell.k);
+        // Intensity based on calories logged vs goal
+        const pct=profile.goal>0?Math.min(d.cal/profile.goal,1):0.5;
+        const alpha=0.3+pct*0.7;
+        bg=`rgba(34,201,138,${alpha.toFixed(2)})`;
+        title=cell.date.toLocaleDateString('en-AU',{day:'numeric',month:'short'})+': '+d.cal+'kcal';
+      } else {
+        bg='var(--surface3)';
+        title=cell.date.toLocaleDateString('en-AU',{day:'numeric',month:'short'})+': not logged';
+      }
+      const todayHighlight=cell.k===todayK?' outline:1.5px solid var(--blue);outline-offset:1px;':'';
+      hmHTML+=`<div class="heatmap-cell" style="background:${bg};${todayHighlight}" title="${title}"></div>`;
+    });
+    hmHTML+='</div>';
+  });
+  document.getElementById('cs-heatmap').innerHTML=hmHTML;
+
+  // Monthly consistency bars
+  // Get all distinct year-months from logged days + last 12 months
+  const months=new Set();
+  const base=new Date(NOW);
+  for(let i=0;i<12;i++){
+    months.add(base.getFullYear()+'-'+String(base.getMonth()+1).padStart(2,'0'));
+    base.setMonth(base.getMonth()-1);
+  }
+  allSorted.forEach(k=>months.add(k.slice(0,7)));
+  const sortedMonths=Array.from(months).sort().reverse().slice(0,18);
+
+  let barsHTML='';
+  sortedMonths.forEach(ym=>{
+    const[y,m]=ym.split('-').map(Number);
+    const keys=monthKeys(y,m-1);
+    const loggedCount=keys.filter(k=>logged.has(k)).length;
+    const total=keys.length;
+    const pct=Math.round((loggedCount/total)*100);
+    const barColor=pct>=85?'var(--green)':pct>=60?'var(--amber)':'var(--red)';
+    const label=new Date(y,m-1,1).toLocaleDateString('en-AU',{month:'short',year:'2-digit'});
+    barsHTML+=`<div class="month-bar-row">
+      <div class="month-bar-name">${label}</div>
+      <div class="month-bar-track"><div class="month-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      <div class="month-bar-pct" style="color:${barColor}">${loggedCount}/${total}</div>
+    </div>`;
+  });
+  document.getElementById('cs-month-bars').innerHTML=barsHTML||'<div style="color:var(--t3);font-size:13px">No data yet.</div>';
+
+  // Streak history
+  let shHTML='';
+  if(runs.length===0){
+    shHTML='<div style="color:var(--t3)">No multi-day streaks yet. Log two consecutive days to start one.</div>';
+  } else {
+    shHTML='<table class="t"><thead><tr><th>Length</th><th>From</th><th>To</th><th>Status</th></tr></thead><tbody>';
+    runs.slice(0,10).forEach(r=>{
+      const isCurrent=r.end&&dateKey(r.end)===todayKey()||r.end&&(new Date(NOW)-r.end)/86400000<1.5;
+      shHTML+=`<tr><td style="font-weight:600;color:var(--green)">${r.len} days</td><td>${r.start.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</td><td>${r.end.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</td><td>${isCurrent?'<span class="badge badge-green">Active</span>':'<span style="color:var(--t3)">Ended</span>'}</td></tr>`;
+    });
+    shHTML+='</tbody></table>';
+  }
+  document.getElementById('cs-streak-history').innerHTML=shHTML;
+}
+
+
 function renderAll(){
   renderOverview();
   renderLogCalendar();
@@ -957,6 +1425,7 @@ function renderAll(){
   renderCharts();
   renderMaintenance();
   renderHistory();
+  renderConsistency();
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -965,6 +1434,8 @@ selectedLogDate=todayKey();
 selectedAnDay=todayKey();
 populateLogForm();
 renderAll();
+// Init Drive after GIS library loads
+window.addEventListener('load', ()=>{ setTimeout(driveInit, 500) });
 </script>
 </body>
 </html>
