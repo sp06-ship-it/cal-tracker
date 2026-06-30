@@ -392,15 +392,47 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 <!-- MAINTENANCE -->
 <div class="page" id="page-maintenance">
   <div class="page-title">Maintenance</div>
-  <div class="page-sub">TDEE = BMR + step calories + exercise burn, computed per day.</div>
-  <div class="metric-row" id="mn-metrics"></div>
-  <div class="card"><div class="card-title">Formula</div><div class="formula" id="mn-formula"></div></div>
-  <div class="card">
-    <div class="card-title">TDEE vs consumed (this month)</div>
-    <div class="legend"><div class="legend-item"><span class="legend-sq" style="background:#22c98a"></span>TDEE</div><div class="legend-item"><span class="legend-sq" style="background:#5b9cf6"></span>Consumed</div><div class="legend-item"><span class="legend-sq" style="background:#f05a5a"></span>Surplus</div><div class="legend-item"><span class="legend-sq" style="background:rgba(157,125,234,.6)"></span>Deficit</div></div>
-    <div class="chart-wrap" style="height:230px"><canvas id="mn-chart">Maintenance chart.</canvas></div>
+  <div class="page-sub">TDEE = BMR + step calories + NEAT + exercise burn, computed per day.</div>
+  <div class="atabs">
+    <div style="font-size:12px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-right:4px">View:</div>
+    <button class="atab active" id="mtab-month" onclick="setMaintTab('month')">This month</button>
+    <button class="atab" id="mtab-all" onclick="setMaintTab('all')">All time</button>
   </div>
-  <div class="card"><div class="card-title">Monthly surplus summary</div><div class="metric-row" id="mn-surplus" style="margin-bottom:0"></div></div>
+
+  <!-- Monthly panel -->
+  <div id="mn-month-panel">
+    <div class="month-nav">
+      <button class="month-btn" onclick="mnShiftMonth(-1)">&#8249;</button>
+      <div class="month-nav-title" id="mn-month-title"></div>
+      <button class="today-btn" onclick="mnGoToday()">This month</button>
+      <button class="month-btn" onclick="mnShiftMonth(1)">&#8250;</button>
+    </div>
+    <div class="metric-row" id="mn-metrics"></div>
+    <div class="card"><div class="card-title">Formula</div><div class="formula" id="mn-formula"></div></div>
+    <div class="card">
+      <div class="card-title">TDEE vs consumed</div>
+      <div class="legend"><div class="legend-item"><span class="legend-sq" style="background:#22c98a"></span>TDEE</div><div class="legend-item"><span class="legend-sq" style="background:#5b9cf6"></span>Consumed</div><div class="legend-item"><span class="legend-sq" style="background:#f05a5a"></span>Surplus</div><div class="legend-item"><span class="legend-sq" style="background:rgba(157,125,234,.6)"></span>Deficit</div></div>
+      <div class="chart-wrap" style="height:230px"><canvas id="mn-chart">Maintenance chart.</canvas></div>
+    </div>
+    <div class="card"><div class="card-title">Monthly surplus summary</div><div class="metric-row" id="mn-surplus" style="margin-bottom:0"></div></div>
+  </div>
+
+  <!-- All-time panel -->
+  <div id="mn-all-panel" style="display:none">
+    <div class="metric-row" id="mn-all-metrics"></div>
+    <div class="card"><div class="card-title">All-time surplus summary</div><div class="metric-row" id="mn-all-surplus" style="margin-bottom:0"></div></div>
+    <div class="card">
+      <div class="card-title">Monthly net surplus / deficit — all time</div>
+      <div class="legend"><div class="legend-item"><span class="legend-sq" style="background:#f05a5a"></span>Surplus</div><div class="legend-item"><span class="legend-sq" style="background:#22c98a"></span>Deficit</div></div>
+      <div class="chart-wrap" style="height:230px"><canvas id="mn-all-chart">All-time chart.</canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Cumulative net over time</div>
+      <div class="legend"><div class="legend-item"><span class="legend-sq" style="background:#5b9cf6"></span>Running total (kcal)</div></div>
+      <div class="chart-wrap" style="height:200px"><canvas id="mn-cumulative-chart">Cumulative.</canvas></div>
+    </div>
+    <div class="card"><div class="card-title">Month-by-month breakdown</div><div style="overflow-x:auto"><table class="t" id="mn-all-table"></table></div></div>
+  </div>
 </div>
 
 <!-- HISTORY -->
@@ -470,11 +502,13 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     </div>
   </div>
   <div class="card">
-    <div class="card-title">Step settings</div>
+    <div class="card-title">Step &amp; activity settings</div>
     <div class="g2">
       <div class="field"><label>Kcal per step</label><input type="number" id="p-ks" value="0.045" step="0.001" min="0.01" max="0.12" oninput="saveProfile()"></div>
+      <div class="field"><label>NEAT adjustment (kcal/day)</label><input type="number" id="p-neat" value="0" step="10" min="0" max="800" oninput="saveProfile()"></div>
     </div>
     <div class="formula" style="margin-top:.875rem" id="p-formula"></div>
+    <div style="font-size:12px;color:var(--t3);line-height:1.6;margin-top:.75rem">NEAT (non-exercise activity thermogenesis) is energy burned from non-step movement: fidgeting, standing, posture, daily tasks. Your step count already captures walking. This flat daily figure accounts for the rest. Most people fall in the 100–400 range. Leave at 0 if unsure, then raise it if your weight trend shows you are maintaining at an apparent surplus.</div>
   </div>
   <div class="card">
     <div class="card-title">Google Drive sync</div>
@@ -507,7 +541,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 
 <script>
 // ─── State ───────────────────────────────────────────────────────────────────
-let profile = {weight:80,height:183,age:19,sex:'m',goal:2000,kcalStep:0.045,tp:150,tc:338,tf:81};
+let profile = {weight:80,height:183,age:19,sex:'m',goal:2000,kcalStep:0.045,neat:0,tp:150,tc:338,tf:81};
 // dayData[dateKey] = {steps,cal,burn,prot,carb,fat,fib}  dateKey = "YYYY-MM-DD"
 let dayData = {};
 
@@ -526,6 +560,10 @@ let anDayViewMonth = NOW.getMonth();
 
 let chViewYear  = NOW.getFullYear();
 let chViewMonth = NOW.getMonth();
+
+let mnViewYear  = NOW.getFullYear();
+let mnViewMonth = NOW.getMonth();
+let maintTab = 'month';
 
 let selectedLogDate = dateKey(NOW);  // currently selected day for Log page
 let selectedAnDay   = dateKey(NOW);  // currently selected day for Analysis daily tab
@@ -571,6 +609,7 @@ function syncProfileInputs(){
   document.getElementById('p-sex').value=profile.sex;
   document.getElementById('p-goal').value=profile.goal;
   document.getElementById('p-ks').value=profile.kcalStep;
+  document.getElementById('p-neat').value=profile.neat||0;
   document.getElementById('p-tp').value=profile.tp;
   document.getElementById('p-tc').value=profile.tc;
   document.getElementById('p-tf').value=profile.tf;
@@ -582,6 +621,7 @@ function saveProfile(){
   profile.sex=document.getElementById('p-sex').value;
   profile.goal=parseInt(document.getElementById('p-goal').value)||2000;
   profile.kcalStep=parseFloat(document.getElementById('p-ks').value)||0.045;
+  profile.neat=parseInt(document.getElementById('p-neat').value)||0;
   profile.tp=parseInt(document.getElementById('p-tp').value)||150;
   profile.tc=parseInt(document.getElementById('p-tc').value)||338;
   profile.tf=parseInt(document.getElementById('p-tf').value)||81;
@@ -590,7 +630,7 @@ function saveProfile(){
 
 // ─── Calorie / BMR ────────────────────────────────────────────────────────────
 function getBMR(){ const {weight,height,age,sex}=profile; return Math.round((10*weight)+(6.25*height)-(5*age)+(sex==='m'?5:-161)) }
-function getTDEE(k){ const d=getDay(k); return Math.round(getBMR()+(d.steps*profile.kcalStep)+(d.burn||0)) }
+function getTDEE(k){ const d=getDay(k); return Math.round(getBMR()+(d.steps*profile.kcalStep)+(profile.neat||0)+(d.burn||0)) }
 function getDay(k){ return dayData[k]||{steps:0,cal:0,burn:0,prot:0,carb:0,fat:0,fib:0} }
 function hasData(k){ const d=dayData[k]; return d&&(d.cal>0||d.steps>0||d.prot>0) }
 
@@ -752,6 +792,35 @@ function anDayShiftMonth(dir){ anDayViewMonth+=dir;if(anDayViewMonth>11){anDayVi
 function anDayGoToday(){ anDayViewYear=NOW.getFullYear();anDayViewMonth=NOW.getMonth();selectedAnDay=todayKey();renderAnalysis() }
 function selectAnDay(k){ selectedAnDay=k;anDayViewYear=keyDate(k).getFullYear();anDayViewMonth=keyDate(k).getMonth();renderAnalysisDayPanel() }
 
+// ── Macro scoring ────────────────────────────────────────────────────────────
+// Each macro scored 0–100. Hitting target = 100. Under-target falls off linearly.
+// Over-target penalises, and the penalty grows the further over you go.
+// Fat is penalised harder per unit over (penaltyMult) AND weighted heavier in the blend.
+function macroSubScore(logged, target, overPenaltyMult){
+  if(target<=0) return 0;
+  const ratio = logged/target;
+  if(ratio<=1){
+    // Under or on target: linear from 0 (nothing) to 100 (on target)
+    return Math.round(ratio*100);
+  }
+  // Over target: subtract a penalty proportional to how far over, scaled by macro sensitivity.
+  // overFrac is fraction above target, e.g. 184% intake -> overFrac 0.84
+  const overFrac = ratio-1;
+  // Base penalty 120 points per 100% over, times the macro's multiplier.
+  const penalty = overFrac * 120 * overPenaltyMult;
+  return Math.round(Math.max(0, 100 - penalty));
+}
+// Returns weighted overall score. Protein & carbs lighter, fat heavier and harsher.
+function macroScore(prot, carb, fat){
+  const {tp,tc,tf} = profile;
+  const pScore = macroSubScore(prot, tp, 0.6); // protein: gentle over-penalty
+  const cScore = macroSubScore(carb, tc, 0.7); // carbs: gentle over-penalty
+  const fScore = macroSubScore(fat,  tf, 1.6); // fat: harsh over-penalty
+  // Weights: protein 30%, carbs 30%, fat 40%
+  const overall = pScore*0.30 + cScore*0.30 + fScore*0.40;
+  return {overall:Math.round(overall), pScore, cScore, fScore};
+}
+
 function mbarHTML(label,color,logged,target,unit){
   const pct=target>0?Math.min(Math.round((logged/target)*100),150):0;
   const dp=Math.min(pct,100);
@@ -759,7 +828,7 @@ function mbarHTML(label,color,logged,target,unit){
   const diff=Math.abs(logged-target);
   const sc=over?'var(--red)':pct>=85?'var(--green)':pct>=60?'var(--amber)':'var(--red)';
   const st=logged===0?'not logged':over?`+${diff}${unit} over`:`${diff}${unit} to go`;
-  return`<div class="mbar"><div class="mbar-head"><span class="mbar-label" style="color:${color}">${label}</span><span class="mbar-nums"><span style="color:${sc};font-weight:600">${logged}${unit}</span> / ${target}${unit} <span style="color:${sc}">${st}</span></span></div><div class="mbar-track"><div class="mbar-fill" style="width:${dp}%;background:${color};opacity:${over?.5:.85}"></div></div></div>`;
+  return`<div class="mbar"><div class="mbar-head"><span class="mbar-label" style="color:${color}">${label}</span><span class="mbar-nums"><span style="color:${sc};font-weight:600">${logged}${unit}</span> / ${target}${unit} <span style="color:${sc}">${st}</span></span></div><div class="mbar-track"><div class="mbar-fill" style="width:${dp}%;background:${color};opacity:${over?0.5:0.85}"></div></div></div>`;
 }
 
 function generateInsights(prot,carb,fat,context){
@@ -829,7 +898,7 @@ function renderAnalysisMonthPanel(){
   const avgC=Math.round(keys.reduce((s,k)=>s+getDay(k).carb,0)/n);
   const avgF=Math.round(keys.reduce((s,k)=>s+getDay(k).fat,0)/n);
   const pp=Math.min(Math.round(avgP/tp*100),100),cp=Math.min(Math.round(avgC/tc*100),100),fp=Math.min(Math.round(avgF/tf*100),100);
-  const score=Math.round((pp+cp+fp)/3);
+  const score=macroScore(avgP,avgC,avgF).overall;
   const sc=score>=85?'var(--green)':score>=60?'var(--amber)':'var(--red)';
 
   document.getElementById('an-month-metrics').innerHTML=`
@@ -878,7 +947,7 @@ function renderAnalysisDayPanel(){
   const{tp,tc,tf}=profile;
   const d=getDay(selectedAnDay);
   const pp=tp>0?Math.round(d.prot/tp*100):0,cp=tc>0?Math.round(d.carb/tc*100):0,fp=tf>0?Math.round(d.fat/tf*100):0;
-  const score=d.cal>0?Math.round((Math.min(pp,100)+Math.min(cp,100)+Math.min(fp,100))/3):0;
+  const score=d.cal>0?macroScore(d.prot,d.carb,d.fat).overall:0;
   const sc=score>=85?'var(--green)':score>=60?'var(--amber)':'var(--red)';
   const kd=keyDate(selectedAnDay);
   const label=kd.toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
@@ -947,12 +1016,30 @@ function renderCharts(){
 }
 
 // ─── Maintenance ──────────────────────────────────────────────────────────────
+function setMaintTab(tab){
+  maintTab=tab;
+  document.getElementById('mn-month-panel').style.display=tab==='month'?'block':'none';
+  document.getElementById('mn-all-panel').style.display=tab==='all'?'block':'none';
+  document.getElementById('mtab-month').classList.toggle('active',tab==='month');
+  document.getElementById('mtab-all').classList.toggle('active',tab==='all');
+  renderMaintenance();
+}
+function mnShiftMonth(dir){ mnViewMonth+=dir;if(mnViewMonth>11){mnViewMonth=0;mnViewYear++}else if(mnViewMonth<0){mnViewMonth=11;mnViewYear--} renderMaintenance() }
+function mnGoToday(){ mnViewYear=NOW.getFullYear();mnViewMonth=NOW.getMonth();renderMaintenance() }
+
 function renderMaintenance(){
   const bmr=getBMR();
-  document.getElementById('mn-formula').innerHTML=`BMR (Mifflin-St Jeor): <strong>${bmr.toLocaleString()} kcal</strong> &nbsp;+&nbsp; steps × ${profile.kcalStep.toFixed(3)} kcal &nbsp;+&nbsp; exercise burn = daily TDEE`;
-  document.getElementById('p-formula').innerHTML=`BMR: <strong>${bmr.toLocaleString()} kcal</strong> &nbsp;|&nbsp; 10,000 steps ≈ <strong>${Math.round(10000*profile.kcalStep)} kcal</strong>`;
+  const neatStr=profile.neat>0?` &nbsp;+&nbsp; NEAT ${profile.neat} kcal`:'';
+  document.getElementById('mn-formula').innerHTML=`BMR (Mifflin-St Jeor): <strong>${bmr.toLocaleString()} kcal</strong> &nbsp;+&nbsp; steps × ${profile.kcalStep.toFixed(3)} kcal${neatStr} &nbsp;+&nbsp; exercise burn = daily TDEE`;
+  document.getElementById('p-formula').innerHTML=`BMR: <strong>${bmr.toLocaleString()} kcal</strong> &nbsp;|&nbsp; 10,000 steps ≈ <strong>${Math.round(10000*profile.kcalStep)} kcal</strong>${profile.neat>0?` &nbsp;|&nbsp; NEAT baseline <strong>+${profile.neat} kcal</strong>`:''}`;
 
-  const y=NOW.getFullYear(),m=NOW.getMonth();
+  if(maintTab==='month') renderMaintMonth(bmr);
+  else renderMaintAll(bmr);
+}
+
+function renderMaintMonth(bmr){
+  const y=mnViewYear,m=mnViewMonth;
+  document.getElementById('mn-month-title').textContent=monthLabel(y,m);
   const keys=monthKeys(y,m).filter(hasData);
   const n=keys.length||1;
   const totalNet=keys.reduce((s,k)=>s+(getDay(k).cal-getTDEE(k)),0);
@@ -962,7 +1049,7 @@ function renderMaintenance(){
 
   document.getElementById('mn-metrics').innerHTML=`
     <div class="metric"><div class="metric-label">BMR</div><div class="metric-val">${bmr.toLocaleString()}</div><div class="metric-sub">kcal at rest</div></div>
-    <div class="metric"><div class="metric-label">Avg daily TDEE</div><div class="metric-val blue">${avgMaint.toLocaleString()}</div><div class="metric-sub">this month</div></div>
+    <div class="metric"><div class="metric-label">Avg daily TDEE</div><div class="metric-val blue">${keys.length>0?avgMaint.toLocaleString():'—'}</div><div class="metric-sub">${monthLabel(y,m)}</div></div>
     <div class="metric"><div class="metric-label">Monthly net</div><div class="metric-val ${totalNet>0?'red':'green'}">${(totalNet>0?'+':'')+totalNet.toLocaleString()}</div><div class="metric-sub">kcal vs TDEE</div></div>
     <div class="metric"><div class="metric-label">Est. fat change</div><div class="metric-val ${totalNet>0?'red':'green'}">${totalNet>=0?'+':''}${(totalNet/7700).toFixed(2)} kg</div><div class="metric-sub">this month</div></div>
   `;
@@ -974,13 +1061,77 @@ function renderMaintenance(){
   `;
 
   const allKeys=monthKeys(y,m);
-  const labels=allKeys.map(k=>{ const d=keyDate(k);return d.getDate()+'/'+( d.getMonth()+1)});
+  const labels=allKeys.map(k=>{ const d=keyDate(k);return d.getDate()+'/'+(d.getMonth()+1)});
   const tdees=allKeys.map(k=>hasData(k)?getTDEE(k):null);
   const cals=allKeys.map(k=>{ const d=getDay(k);return d.cal>0?d.cal:null});
   const nets=allKeys.map(k=>{ const d=getDay(k);return d.cal>0?d.cal-getTDEE(k):null});
   const tc2='#666',gc='rgba(255,255,255,.06)';
   if(charts.maint) charts.maint.destroy();
   charts.maint=new Chart(document.getElementById('mn-chart'),{type:'bar',data:{labels,datasets:[{label:'TDEE',data:tdees,backgroundColor:'rgba(34,201,138,.45)',borderRadius:3},{label:'Consumed',data:cals,backgroundColor:'rgba(91,156,246,.6)',borderRadius:3},{label:'Net',data:nets,backgroundColor:nets.map(n=>n===null?'transparent':n>0?'rgba(240,90,90,.75)':'rgba(157,125,234,.55)'),borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y!==null?c.parsed.y.toLocaleString()+' kcal':'—'}`}}},scales:{x:{ticks:{color:tc2,font:{size:9}},grid:{display:false}},y:{ticks:{color:tc2,font:{size:9},callback:v=>v.toLocaleString()},grid:{color:gc},beginAtZero:true}}}});
+}
+
+function renderMaintAll(bmr){
+  // Gather every logged day across all time
+  const allLogged=Object.keys(dayData).filter(hasData).sort();
+  const n=allLogged.length||1;
+  const grandNet=allLogged.reduce((s,k)=>s+(getDay(k).cal-getTDEE(k)),0);
+  const grandMaint=allLogged.reduce((s,k)=>s+getTDEE(k),0);
+  const grandCal=allLogged.reduce((s,k)=>s+getDay(k).cal,0);
+  const avgDailyNet=Math.round(grandNet/n);
+  const avgTDEE=Math.round(grandMaint/n);
+
+  // Date span
+  const spanStr=allLogged.length>0?shortDate(allLogged[0])+' – '+shortDate(allLogged[allLogged.length-1]):'no data';
+
+  document.getElementById('mn-all-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Days logged</div><div class="metric-val blue">${allLogged.length}</div><div class="metric-sub">${spanStr}</div></div>
+    <div class="metric"><div class="metric-label">Avg daily TDEE</div><div class="metric-val">${allLogged.length>0?avgTDEE.toLocaleString():'—'}</div><div class="metric-sub">across all logged days</div></div>
+    <div class="metric"><div class="metric-label">Avg daily net</div><div class="metric-val ${avgDailyNet>0?'red':'green'}">${avgDailyNet>=0?'+':''}${avgDailyNet.toLocaleString()}</div><div class="metric-sub">kcal per day</div></div>
+    <div class="metric"><div class="metric-label">All-time net</div><div class="metric-val ${grandNet>0?'red':'green'}">${grandNet>=0?'+':''}${grandNet.toLocaleString()}</div><div class="metric-sub">kcal cumulative</div></div>
+  `;
+
+  document.getElementById('mn-all-surplus').innerHTML=`
+    <div class="metric"><div class="metric-label">Total maintenance</div><div class="metric-val">${grandMaint.toLocaleString()}</div><div class="metric-sub">kcal needed all-time</div></div>
+    <div class="metric"><div class="metric-label">Total consumed</div><div class="metric-val">${grandCal.toLocaleString()}</div><div class="metric-sub">kcal eaten all-time</div></div>
+    <div class="metric"><div class="metric-label">All-time surplus</div><div class="metric-val ${grandNet>=0?'red':'green'}">${grandNet>=0?'+':''}${grandNet.toLocaleString()}</div><div class="metric-sub">kcal vs TDEE</div></div>
+    <div class="metric"><div class="metric-label">Est. fat change</div><div class="metric-val ${grandNet>=0?'red':'green'}">${grandNet>=0?'+':''}${(grandNet/7700).toFixed(2)} kg</div><div class="metric-sub">since you started</div></div>
+  `;
+
+  // Group net by month
+  const monthNets={};
+  allLogged.forEach(k=>{
+    const ym=k.slice(0,7);
+    if(!monthNets[ym]) monthNets[ym]=0;
+    monthNets[ym]+=getDay(k).cal-getTDEE(k);
+  });
+  const sortedMonths=Object.keys(monthNets).sort();
+  const monthLabels=sortedMonths.map(ym=>{ const[yy,mm]=ym.split('-').map(Number);return new Date(yy,mm-1,1).toLocaleDateString('en-AU',{month:'short',year:'2-digit'})});
+  const monthNetVals=sortedMonths.map(ym=>Math.round(monthNets[ym]));
+  const tc2='#666',gc='rgba(255,255,255,.06)';
+
+  if(charts.mnAll) charts.mnAll.destroy();
+  charts.mnAll=new Chart(document.getElementById('mn-all-chart'),{type:'bar',data:{labels:monthLabels,datasets:[{label:'Net',data:monthNetVals,backgroundColor:monthNetVals.map(v=>v>0?'rgba(240,90,90,.75)':'rgba(34,201,138,.6)'),borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const v=c.parsed.y;return(v>0?'Surplus +':'Deficit ')+v.toLocaleString()+' kcal'}}}},scales:{x:{ticks:{color:tc2,font:{size:10}},grid:{display:false}},y:{ticks:{color:tc2,font:{size:9},callback:v=>(v>0?'+':'')+v.toLocaleString()},grid:{color:gc}}}}});
+
+  // Cumulative running total day by day
+  let running=0;
+  const cumPoints=allLogged.map(k=>{ running+=getDay(k).cal-getTDEE(k);return running });
+  const cumLabels=allLogged.map(k=>shortDate(k));
+  if(charts.mnCum) charts.mnCum.destroy();
+  charts.mnCum=new Chart(document.getElementById('mn-cumulative-chart'),{type:'line',data:{labels:cumLabels,datasets:[{label:'Cumulative net',data:cumPoints,borderColor:'#5b9cf6',backgroundColor:'rgba(91,156,246,.1)',fill:true,tension:.25,pointRadius:cumPoints.length>40?0:3,pointBackgroundColor:'#5b9cf6'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`Running total: ${c.parsed.y>=0?'+':''}${c.parsed.y.toLocaleString()} kcal`}}},scales:{x:{ticks:{color:tc2,font:{size:9},maxTicksLimit:12},grid:{display:false}},y:{ticks:{color:tc2,font:{size:9},callback:v=>(v>0?'+':'')+v.toLocaleString()},grid:{color:gc}}}}});
+
+  // Month-by-month table
+  const rows=sortedMonths.slice().reverse().map(ym=>{
+    const[yy,mm]=ym.split('-').map(Number);
+    const mk=monthKeys(yy,mm-1).filter(hasData);
+    const mNet=Math.round(monthNets[ym]);
+    const mCal=mk.reduce((s,k)=>s+getDay(k).cal,0);
+    const mMaint=mk.reduce((s,k)=>s+getTDEE(k),0);
+    const label=new Date(yy,mm-1,1).toLocaleDateString('en-AU',{month:'long',year:'numeric'});
+    return`<tr><td>${label}</td><td>${mk.length}</td><td>${mMaint.toLocaleString()}</td><td>${mCal.toLocaleString()}</td><td style="color:${mNet>0?'var(--red)':'var(--green)'};font-weight:600">${mNet>=0?'+':''}${mNet.toLocaleString()}</td><td style="color:${mNet>0?'var(--red)':'var(--green)'}">${mNet>=0?'+':''}${(mNet/7700).toFixed(2)} kg</td></tr>`;
+  }).join('');
+  document.getElementById('mn-all-table').innerHTML=allLogged.length>0
+    ?`<thead><tr><th>Month</th><th>Days</th><th>Maintenance</th><th>Consumed</th><th>Net</th><th>Fat Δ</th></tr></thead><tbody>${rows}</tbody>`
+    :'<tbody><tr><td style="color:var(--t3)">No data logged yet.</td></tr></tbody>';
 }
 
 // ─── History ──────────────────────────────────────────────────────────────────
