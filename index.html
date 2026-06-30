@@ -1,3 +1,6 @@
+
+
+Calorie tracker · HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,7 +24,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;min-height:100vh;line-height:1.5}
 .app{display:flex;min-height:100vh}
-
+ 
 /* Sidebar */
 .sidebar{width:220px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:1.5rem 1rem;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
 .logo{font-size:20px;font-weight:700;letter-spacing:-.5px;margin-bottom:2rem;padding-left:.25rem}
@@ -31,13 +34,13 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .nav-item.active{background:var(--surface3);color:var(--text)}
 .nav-item svg{width:16px;height:16px;flex-shrink:0}
 .nav-sep{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);padding:.5rem .75rem;margin:.5rem 0 .25rem}
-
+ 
 /* Main */
 .main{flex:1;padding:2rem 2.5rem;overflow-y:auto;max-width:1000px}
 .page{display:none}.page.active{display:block}
 .page-title{font-size:22px;font-weight:600;letter-spacing:-.4px;margin-bottom:.2rem}
 .page-sub{font-size:14px;color:var(--t2);margin-bottom:1.5rem}
-
+ 
 /* Month nav */
 .month-nav{display:flex;align-items:center;gap:12px;margin-bottom:1.25rem}
 .month-nav-title{font-size:17px;font-weight:600;flex:1}
@@ -45,7 +48,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .month-btn:hover{background:var(--surface3)}
 .today-btn{height:32px;padding:0 12px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--t2);cursor:pointer;font-size:12px;transition:background .12s}
 .today-btn:hover{background:var(--surface3);color:var(--text)}
-
+ 
 /* Calendar grid */
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:1.5rem}
 .cal-dow{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;text-align:center;padding:.25rem 0}
@@ -64,7 +67,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .cal-dot{width:5px;height:5px;border-radius:50%}
 .cal-bar-wrap{height:2px;background:var(--surface3);border-radius:1px;margin-top:4px;overflow:hidden}
 .cal-bar{height:100%;border-radius:1px}
-
+ 
 /* Metrics */
 .metric-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.5rem}
 .metric-row-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:1.5rem}
@@ -73,11 +76,11 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .metric-val{font-size:24px;font-weight:600;letter-spacing:-.5px}
 .metric-sub{font-size:11px;color:var(--t3);margin-top:4px}
 .green{color:var(--green)}.red{color:var(--red)}.blue{color:var(--blue)}.amber{color:var(--amber)}.purple{color:var(--purple)}
-
+ 
 /* Card */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1.25rem 1.5rem;margin-bottom:1.25rem}
 .card-title{font-size:13px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem}
-
+ 
 /* Form fields */
 .field label{font-size:11px;color:var(--t3);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
 .field input,.field select{width:100%;height:36px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-size:14px;padding:0 10px;transition:border-color .12s}
@@ -86,7 +89,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:.875rem}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:.875rem}
 .g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:.875rem}
-
+ 
 /* Buttons */
 .btn{height:36px;padding:0 16px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text);transition:background .12s,border-color .12s}
 .btn:hover{background:var(--surface3)}
@@ -94,14 +97,14 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .btn-primary:hover{background:#28e09a}
 .btn-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .divider{border:none;border-top:1px solid var(--border);margin:.875rem 0}
-
+ 
 /* Charts */
 .chart-wrap{position:relative;width:100%}
 .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1.25rem}
 .legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)}
 .legend-sq{width:8px;height:8px;border-radius:2px;flex-shrink:0}
-
+ 
 /* Tables */
 .t{width:100%;border-collapse:collapse;font-size:13px}
 .t th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);padding:.5rem .75rem;border-bottom:1px solid var(--border);font-weight:500}
@@ -109,7 +112,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .t td:first-child{color:var(--text)}
 .t tr:last-child td{border-bottom:none}
 .t tr.clickable:hover td{background:var(--surface2);cursor:pointer}
-
+ 
 /* Macro bars */
 .mbar{margin-bottom:.875rem}
 .mbar-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
@@ -117,7 +120,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .mbar-nums{font-size:12px;color:var(--t3)}
 .mbar-track{height:7px;background:var(--surface3);border-radius:4px;overflow:hidden}
 .mbar-fill{height:100%;border-radius:4px;transition:width .3s}
-
+ 
 /* Insight cards */
 .insight-list{display:flex;flex-direction:column;gap:9px}
 .ic{background:var(--surface2);border-radius:var(--r);padding:.875rem 1rem;border-left:3px solid transparent;font-size:13px;line-height:1.65}
@@ -125,23 +128,23 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .ic-title{font-weight:600;margin-bottom:3px;font-size:13px}
 .ic.good .ic-title{color:var(--green)}.ic.warn .ic-title{color:var(--amber)}.ic.bad .ic-title{color:var(--red)}.ic.info .ic-title{color:var(--blue)}
 .ic-body{color:var(--t2)}
-
+ 
 /* Analysis tabs */
 .atabs{display:flex;gap:4px;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center}
 .atab{padding:5px 12px;border-radius:var(--r);font-size:12px;border:1px solid var(--border);background:none;color:var(--t2);cursor:pointer;transition:background .12s,color .12s}
 .atab:hover{background:var(--surface2);color:var(--text)}
 .atab.active{background:var(--surface3);color:var(--text);border-color:var(--border-h)}
-
+ 
 /* Formula */
 .formula{font-size:12px;color:var(--t3);line-height:1.8;background:var(--surface2);border-radius:var(--r);padding:.625rem .875rem}
 .formula strong{color:var(--t2);font-weight:600}
-
+ 
 /* Badge */
 .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
 .badge-green{background:var(--gdim);color:var(--green)}
 .badge-blue{background:var(--bdim);color:var(--blue)}
 .badge-red{background:var(--rdim);color:var(--red)}
-
+ 
 /* Streak / consistency */
 .streak-hero{display:flex;gap:16px;margin-bottom:1.5rem;flex-wrap:wrap}
 .streak-card{flex:1;min-width:140px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:4px}
@@ -165,22 +168,22 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .month-bar-pct{font-size:11px;color:var(--t3);width:36px;text-align:right;flex-shrink:0}
 .nudge{background:var(--adim);border:1px solid rgba(245,166,35,.2);border-radius:var(--r);padding:.875rem 1rem;font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:1.25rem}
 .nudge strong{color:var(--amber)}
-
+ 
 /* Hint */
 .hint{background:var(--bdim);border:1px solid rgba(91,156,246,.2);border-radius:var(--r);padding:.75rem 1rem;font-size:12px;color:var(--t2);line-height:1.7;margin-top:1rem}
 .hint code{font-family:monospace;background:var(--surface3);padding:1px 5px;border-radius:4px;font-size:11px}
-
+ 
 /* Toast */
 #toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--surface3);border:1px solid var(--border-h);border-radius:var(--r);padding:.625rem 1rem;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:999}
 #toast.show{opacity:1}
-
+ 
 /* Food suggestions grid */
 .food-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .food-card{border-radius:var(--r);padding:.75rem}
-
+ 
 /* History list */
 .hist-month-label{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;padding:.5rem .75rem;margin-top:.5rem}
-
+ 
 /* Drive sync */
 .drive-status{display:flex;align-items:center;gap:10px;padding:.75rem 1rem;border-radius:var(--r);font-size:13px;margin-top:1rem}
 .drive-status.connected{background:var(--gdim);border:1px solid rgba(34,201,138,.2);color:var(--green)}
@@ -195,7 +198,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px}
-
+ 
 @media(max-width:700px){
   .sidebar{display:none}
   .main{padding:1rem}
@@ -209,7 +212,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 </head>
 <body>
 <div class="app">
-
+ 
 <aside class="sidebar">
   <div class="logo">Cal<span>.</span></div>
   <button class="nav-item active" onclick="showPage('overview',this)">
@@ -246,9 +249,9 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     Profile
   </button>
 </aside>
-
+ 
 <main class="main">
-
+ 
 <!-- OVERVIEW -->
 <div class="page active" id="page-overview">
   <div class="page-title">Overview</div>
@@ -270,7 +273,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div style="overflow-x:auto"><table class="t" id="ov-table"></table></div>
   </div>
 </div>
-
+ 
 <!-- LOG DAY -->
 <div class="page" id="page-log">
   <div class="page-title">Log a day</div>
@@ -307,7 +310,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     </div>
   </div>
 </div>
-
+ 
 <!-- MACRO ANALYSIS -->
 <div class="page" id="page-analysis">
   <div class="page-title">Macro analysis</div>
@@ -353,7 +356,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div class="card"><div class="card-title">What to eat to hit remaining targets</div><div id="an-day-food"></div></div>
   </div>
 </div>
-
+ 
 <!-- CHARTS -->
 <div class="page" id="page-charts">
   <div class="page-title">Charts</div>
@@ -388,7 +391,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div class="chart-wrap" style="height:180px"><canvas id="ch-net">Net chart.</canvas></div>
   </div>
 </div>
-
+ 
 <!-- MAINTENANCE -->
 <div class="page" id="page-maintenance">
   <div class="page-title">Maintenance</div>
@@ -398,7 +401,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <button class="atab active" id="mtab-month" onclick="setMaintTab('month')">This month</button>
     <button class="atab" id="mtab-all" onclick="setMaintTab('all')">All time</button>
   </div>
-
+ 
   <!-- Monthly panel -->
   <div id="mn-month-panel">
     <div class="month-nav">
@@ -416,7 +419,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     </div>
     <div class="card"><div class="card-title">Monthly surplus summary</div><div class="metric-row" id="mn-surplus" style="margin-bottom:0"></div></div>
   </div>
-
+ 
   <!-- All-time panel -->
   <div id="mn-all-panel" style="display:none">
     <div class="metric-row" id="mn-all-metrics"></div>
@@ -434,7 +437,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div class="card"><div class="card-title">Month-by-month breakdown</div><div style="overflow-x:auto"><table class="t" id="mn-all-table"></table></div></div>
   </div>
 </div>
-
+ 
 <!-- HISTORY -->
 <div class="page" id="page-history">
   <div class="page-title">All-time history</div>
@@ -443,7 +446,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div id="hist-list" style="max-height:600px;overflow-y:auto"></div>
   </div>
 </div>
-
+ 
 <!-- CONSISTENCY -->
 <div class="page" id="page-consistency">
   <div class="page-title">Consistency</div>
@@ -478,7 +481,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div id="cs-streak-history" style="font-size:13px;color:var(--t2)"></div>
   </div>
 </div>
-
+ 
 <!-- PROFILE -->
 <div class="page" id="page-profile">
   <div class="page-title">Profile</div>
@@ -534,42 +537,42 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
   </div>
 </div>
-
+ 
 </main>
 </div>
 <div id="toast"></div>
-
+ 
 <script>
 // ─── State ───────────────────────────────────────────────────────────────────
 let profile = {weight:80,height:183,age:19,sex:'m',goal:2000,kcalStep:0.045,neat:0,tp:150,tc:338,tf:81};
 // dayData[dateKey] = {steps,cal,burn,prot,carb,fat,fib}  dateKey = "YYYY-MM-DD"
 let dayData = {};
-
+ 
 const NOW = new Date();
 let viewYear  = NOW.getFullYear();
 let viewMonth = NOW.getMonth(); // 0-based
-
+ 
 let logViewYear  = NOW.getFullYear();
 let logViewMonth = NOW.getMonth();
-
+ 
 let anViewYear  = NOW.getFullYear();
 let anViewMonth = NOW.getMonth();
-
+ 
 let anDayViewYear  = NOW.getFullYear();
 let anDayViewMonth = NOW.getMonth();
-
+ 
 let chViewYear  = NOW.getFullYear();
 let chViewMonth = NOW.getMonth();
-
+ 
 let mnViewYear  = NOW.getFullYear();
 let mnViewMonth = NOW.getMonth();
 let maintTab = 'month';
-
+ 
 let selectedLogDate = dateKey(NOW);  // currently selected day for Log page
 let selectedAnDay   = dateKey(NOW);  // currently selected day for Analysis daily tab
 let analysisTab = 'month';
 let charts = {};
-
+ 
 // ─── Date helpers ─────────────────────────────────────────────────────────────
 function dateKey(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0') }
 function keyDate(k){ const [y,m,d]=k.split('-').map(Number); return new Date(y,m-1,d) }
@@ -577,7 +580,7 @@ function todayKey(){ return dateKey(NOW) }
 function monthLabel(y,m){ return new Date(y,m,1).toLocaleDateString('en-AU',{month:'long',year:'numeric'}) }
 function shortDate(k){ const d=keyDate(k); return d.toLocaleDateString('en-AU',{day:'numeric',month:'short'}) }
 function dowAbbr(d){ return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()] }
-
+ 
 function daysInMonth(y,m){ return new Date(y,m+1,0).getDate() }
 function monthKeys(y,m){
   const keys=[];
@@ -587,7 +590,7 @@ function monthKeys(y,m){
   return keys;
 }
 function isToday(k){ return k===todayKey() }
-
+ 
 // ─── Profile / persistence ────────────────────────────────────────────────────
 function save(){
   localStorage.setItem('cal2_profile',JSON.stringify(profile));
@@ -627,13 +630,13 @@ function saveProfile(){
   profile.tf=parseInt(document.getElementById('p-tf').value)||81;
   save(); renderAll();
 }
-
+ 
 // ─── Calorie / BMR ────────────────────────────────────────────────────────────
 function getBMR(){ const {weight,height,age,sex}=profile; return Math.round((10*weight)+(6.25*height)-(5*age)+(sex==='m'?5:-161)) }
 function getTDEE(k){ const d=getDay(k); return Math.round(getBMR()+(d.steps*profile.kcalStep)+(profile.neat||0)+(d.burn||0)) }
 function getDay(k){ return dayData[k]||{steps:0,cal:0,burn:0,prot:0,carb:0,fat:0,fib:0} }
 function hasData(k){ const d=dayData[k]; return d&&(d.cal>0||d.steps>0||d.prot>0) }
-
+ 
 // ─── Nav ──────────────────────────────────────────────────────────────────────
 function showPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -642,7 +645,7 @@ function showPage(id,btn){
   if(btn) btn.classList.add('active');
   renderAll();
 }
-
+ 
 // ─── Log page ─────────────────────────────────────────────────────────────────
 function selectLogDate(k){
   selectedLogDate=k;
@@ -651,7 +654,7 @@ function selectLogDate(k){
 }
 function logShiftMonth(dir){ logViewMonth+=dir; if(logViewMonth>11){logViewMonth=0;logViewYear++}else if(logViewMonth<0){logViewMonth=11;logViewYear--} renderLogCalendar() }
 function logGoToday(){ logViewYear=NOW.getFullYear();logViewMonth=NOW.getMonth();selectedLogDate=todayKey();populateLogForm();renderLogCalendar() }
-
+ 
 function populateLogForm(){
   const d=getDay(selectedLogDate);
   document.getElementById('l-steps').value=d.steps||'';
@@ -684,7 +687,7 @@ function clearDay(){
   ['l-steps','l-cal','l-burn','l-prot','l-carb','l-fat','l-fib'].forEach(id=>document.getElementById(id).value='');
   save(); renderAll(); toast('Cleared — '+shortDate(selectedLogDate));
 }
-
+ 
 // ─── Calendar renderer (shared) ───────────────────────────────────────────────
 function renderCalendar(dowsId,cellsId,y,m,activeKey,onClickFn,compact){
   const dowsEl=document.getElementById(dowsId);
@@ -692,12 +695,12 @@ function renderCalendar(dowsId,cellsId,y,m,activeKey,onClickFn,compact){
   if(!dowsEl||!cellsEl) return;
   const DOWS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   dowsEl.innerHTML=DOWS.map(d=>`<div class="cal-dow">${d}</div>`).join('');
-
+ 
   const firstDay=new Date(y,m,1).getDay(); // 0=Sun
   const startOffset=(firstDay===0?6:firstDay-1); // Mon-based
   const totalDays=daysInMonth(y,m);
   const totalCells=Math.ceil((startOffset+totalDays)/7)*7;
-
+ 
   let html='';
   for(let i=0;i<totalCells;i++){
     const dayNum=i-startOffset+1;
@@ -718,7 +721,7 @@ function renderCalendar(dowsId,cellsId,y,m,activeKey,onClickFn,compact){
     const fpct=profile.tf>0?dp.fat/profile.tf:0;
     const dotColor=pct=>(pct>=0.85&&pct<=1.15)?'var(--green)':pct>=0.6?'var(--amber)':'var(--red)';
     const dotsHtml=hasData(k)&&dp.prot>0?`<div class="cal-dot-row"><div class="cal-dot" style="background:${dotColor(ppct)}"></div><div class="cal-dot" style="background:${dotColor(cpct)}"></div><div class="cal-dot" style="background:${dotColor(fpct)}"></div></div>`:'';
-
+ 
     html+=`<div class="cal-cell${isActive?' active':''}${itd&&!isActive?' today':''}" onclick="${onClickFn}('${k}')">
       <div class="cal-day-num">${dayNum}</div>
       <div class="cal-net" style="color:${netColor}">${net===null?(hasData(k)?'✓':''):(net>0?'+':'')+net}</div>
@@ -729,30 +732,30 @@ function renderCalendar(dowsId,cellsId,y,m,activeKey,onClickFn,compact){
   }
   cellsEl.innerHTML=html;
 }
-
+ 
 // ─── Overview ─────────────────────────────────────────────────────────────────
 function shiftMonth(dir){ viewMonth+=dir; if(viewMonth>11){viewMonth=0;viewYear++}else if(viewMonth<0){viewMonth=11;viewYear--} renderOverview() }
 function goToday(){ viewYear=NOW.getFullYear();viewMonth=NOW.getMonth();renderOverview() }
-
+ 
 function renderOverview(){
   document.getElementById('ov-month-title').textContent=monthLabel(viewYear,viewMonth);
   document.getElementById('ov-sub').textContent=monthLabel(viewYear,viewMonth)+' — click any day to view or log it';
   renderCalendar('cal-dows','cal-cells',viewYear,viewMonth,null,'ovClickDay');
-
+ 
   const keys=monthKeys(viewYear,viewMonth).filter(hasData);
   const daysLogged=keys.length||1;
   const totalCal=keys.reduce((s,k)=>s+getDay(k).cal,0);
   const totalTDEE=keys.reduce((s,k)=>s+getTDEE(k),0);
   const totalNet=keys.reduce((s,k)=>s+(getDay(k).cal-getTDEE(k)),0);
   const avgMaint=Math.round(totalTDEE/daysLogged);
-
+ 
   document.getElementById('ov-metrics').innerHTML=`
     <div class="metric"><div class="metric-label">Days logged</div><div class="metric-val blue">${keys.length}</div><div class="metric-sub">of ${daysInMonth(viewYear,viewMonth)} days</div></div>
     <div class="metric"><div class="metric-label">Total consumed</div><div class="metric-val">${totalCal.toLocaleString()}</div><div class="metric-sub">kcal this month</div></div>
     <div class="metric"><div class="metric-label">Monthly net</div><div class="metric-val ${totalNet>0?'red':'green'}">${(totalNet>0?'+':'')+totalNet.toLocaleString()}</div><div class="metric-sub">kcal vs TDEE</div></div>
     <div class="metric"><div class="metric-label">Est. fat change</div><div class="metric-val ${totalNet>0?'red':'green'}">${totalNet>=0?'+':''}${(totalNet/7700).toFixed(2)} kg</div><div class="metric-sub">7,700 kcal per kg</div></div>
   `;
-
+ 
   const allKeys=monthKeys(viewYear,viewMonth);
   const tbody=allKeys.map(k=>{
     const d=getDay(k);const td=getTDEE(k);const itd=isToday(k);
@@ -770,13 +773,13 @@ function jumpToLog(k){
   populateLogForm();
   showPage('log',document.querySelectorAll('.nav-item')[1]);
 }
-
+ 
 // ─── Log calendar ─────────────────────────────────────────────────────────────
 function renderLogCalendar(){
   document.getElementById('log-month-title').textContent=monthLabel(logViewYear,logViewMonth);
   renderCalendar('log-cal-dows','log-cal-cells',logViewYear,logViewMonth,selectedLogDate,'selectLogDate');
 }
-
+ 
 // ─── Analysis ─────────────────────────────────────────────────────────────────
 function setAnalysisTab(tab){
   analysisTab=tab;
@@ -791,7 +794,7 @@ function anGoToday(){ anViewYear=NOW.getFullYear();anViewMonth=NOW.getMonth();re
 function anDayShiftMonth(dir){ anDayViewMonth+=dir;if(anDayViewMonth>11){anDayViewMonth=0;anDayViewYear++}else if(anDayViewMonth<0){anDayViewMonth=11;anDayViewYear--} renderAnalysis() }
 function anDayGoToday(){ anDayViewYear=NOW.getFullYear();anDayViewMonth=NOW.getMonth();selectedAnDay=todayKey();renderAnalysis() }
 function selectAnDay(k){ selectedAnDay=k;anDayViewYear=keyDate(k).getFullYear();anDayViewMonth=keyDate(k).getMonth();renderAnalysisDayPanel() }
-
+ 
 // ── Macro scoring ────────────────────────────────────────────────────────────
 // Each macro scored 0–100. Hitting target = 100. Under-target falls off linearly.
 // Over-target penalises, and the penalty grows the further over you go.
@@ -820,7 +823,7 @@ function macroScore(prot, carb, fat){
   const overall = pScore*0.30 + cScore*0.30 + fScore*0.40;
   return {overall:Math.round(overall), pScore, cScore, fScore};
 }
-
+ 
 function mbarHTML(label,color,logged,target,unit){
   const pct=target>0?Math.min(Math.round((logged/target)*100),150):0;
   const dp=Math.min(pct,100);
@@ -830,7 +833,7 @@ function mbarHTML(label,color,logged,target,unit){
   const st=logged===0?'not logged':over?`+${diff}${unit} over`:`${diff}${unit} to go`;
   return`<div class="mbar"><div class="mbar-head"><span class="mbar-label" style="color:${color}">${label}</span><span class="mbar-nums"><span style="color:${sc};font-weight:600">${logged}${unit}</span> / ${target}${unit} <span style="color:${sc}">${st}</span></span></div><div class="mbar-track"><div class="mbar-fill" style="width:${dp}%;background:${color};opacity:${over?0.5:0.85}"></div></div></div>`;
 }
-
+ 
 function generateInsights(prot,carb,fat,context){
   const{tp,tc,tf}=profile;
   const ins=[];
@@ -853,7 +856,7 @@ function generateInsights(prot,carb,fat,context){
   else ins.push({t:'bad',h:'Fat very low',b:`${fat}g of ${tf}g (${fp}%). Chronically low fat can suppress testosterone and impair fat-soluble vitamin (A, D, E, K) absorption. One tablespoon of olive oil is ~14g fat.`});
   return ins;
 }
-
+ 
 function foodSuggestionsHTML(remP,remC,remF){
   if(remP<=0&&remC<=0&&remF<=0) return`<p style="color:var(--green);font-size:14px">All three macro targets hit. Great day.</p>`;
   let html='<div class="food-grid">';
@@ -884,14 +887,14 @@ function foodSuggestionsHTML(remP,remC,remF){
   html+='</div>';
   return html;
 }
-
+ 
 function renderAnalysisMonthPanel(){
   const{tp,tc,tf}=profile;
   document.getElementById('an-month-title').textContent=monthLabel(anViewYear,anViewMonth);
   document.getElementById('an-prot-target').textContent=tp+'g protein';
   document.getElementById('an-carb-target').textContent=tc+'g carbs';
   document.getElementById('an-fat-target').textContent=tf+'g fat';
-
+ 
   const keys=monthKeys(anViewYear,anViewMonth).filter(hasData);
   const n=keys.length||1;
   const avgP=Math.round(keys.reduce((s,k)=>s+getDay(k).prot,0)/n);
@@ -900,14 +903,14 @@ function renderAnalysisMonthPanel(){
   const pp=Math.min(Math.round(avgP/tp*100),100),cp=Math.min(Math.round(avgC/tc*100),100),fp=Math.min(Math.round(avgF/tf*100),100);
   const score=macroScore(avgP,avgC,avgF).overall;
   const sc=score>=85?'var(--green)':score>=60?'var(--amber)':'var(--red)';
-
+ 
   document.getElementById('an-month-metrics').innerHTML=`
     <div class="metric"><div class="metric-label">Macro score</div><div class="metric-val" style="color:${sc}">${keys.length>0?score+'%':'—'}</div><div class="metric-sub">${keys.length} days logged</div></div>
     <div class="metric"><div class="metric-label">Avg protein</div><div class="metric-val purple">${avgP}g</div><div class="metric-sub">target ${tp}g (${Math.round(avgP/tp*100)}%)</div></div>
     <div class="metric"><div class="metric-label">Avg carbs</div><div class="metric-val amber">${avgC}g</div><div class="metric-sub">target ${tc}g (${Math.round(avgC/tc*100)}%)</div></div>
     <div class="metric"><div class="metric-label">Avg fat</div><div class="metric-val red">${avgF}g</div><div class="metric-sub">target ${tf}g (${Math.round(avgF/tf*100)}%)</div></div>
   `;
-
+ 
   // Radar
   if(charts.radar) charts.radar.destroy();
   charts.radar=new Chart(document.getElementById('an-radar'),{
@@ -918,12 +921,12 @@ function renderAnalysisMonthPanel(){
     ]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{min:0,max:100,ticks:{display:false},grid:{color:'rgba(255,255,255,.07)'},pointLabels:{color:'#9898a6',font:{size:12}},angleLines:{color:'rgba(255,255,255,.06)'}}}}
   });
-
+ 
   document.getElementById('an-month-bars').innerHTML=mbarHTML('Protein','#9d7dea',avgP,tp,'g')+mbarHTML('Carbohydrates','#f5a623',avgC,tc,'g')+mbarHTML('Fat','#f05a5a',avgF,tf,'g');
-
+ 
   const ins=generateInsights(avgP,avgC,avgF,'month');
   document.getElementById('an-month-insights').innerHTML=ins.map(i=>`<div class="ic ${i.t}"><div class="ic-title">${i.h}</div><div class="ic-body">${i.b}</div></div>`).join('');
-
+ 
   // Heatmap
   const allKeys=monthKeys(anViewYear,anViewMonth);
   const heatRows=allKeys.map(k=>{
@@ -939,11 +942,11 @@ function renderAnalysisMonthPanel(){
   }).join('');
   document.getElementById('an-heatmap').innerHTML=`<thead><tr><th>Date</th><th>Protein / ${tp}g</th><th>Carbs / ${tc}g</th><th>Fat / ${tf}g</th></tr></thead><tbody>${heatRows}</tbody>`;
 }
-
+ 
 function renderAnalysisDayPanel(){
   document.getElementById('an-day-month-title').textContent=monthLabel(anDayViewYear,anDayViewMonth);
   renderCalendar('an-day-dows','an-day-cells',anDayViewYear,anDayViewMonth,selectedAnDay,'selectAnDay');
-
+ 
   const{tp,tc,tf}=profile;
   const d=getDay(selectedAnDay);
   const pp=tp>0?Math.round(d.prot/tp*100):0,cp=tc>0?Math.round(d.carb/tc*100):0,fp=tf>0?Math.round(d.fat/tf*100):0;
@@ -951,7 +954,7 @@ function renderAnalysisDayPanel(){
   const sc=score>=85?'var(--green)':score>=60?'var(--amber)':'var(--red)';
   const kd=keyDate(selectedAnDay);
   const label=kd.toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-
+ 
   document.getElementById('an-day-progress-title').textContent='Progress — '+label;
   document.getElementById('an-day-metrics').innerHTML=`
     <div class="metric"><div class="metric-label">Macro score</div><div class="metric-val" style="color:${sc}">${d.cal>0?score+'%':'—'}</div><div class="metric-sub">${d.cal>0?(score>=85?'On track':score>=60?'Getting there':'Needs work'):'No data logged'}</div></div>
@@ -959,62 +962,62 @@ function renderAnalysisDayPanel(){
     <div class="metric"><div class="metric-label">Carbs</div><div class="metric-val amber">${d.carb}g</div><div class="metric-sub">of ${tc}g (${cp}%)</div></div>
     <div class="metric"><div class="metric-label">Fat</div><div class="metric-val red">${d.fat}g</div><div class="metric-sub">of ${tf}g (${fp}%)</div></div>
   `;
-
+ 
   document.getElementById('an-day-bars').innerHTML=mbarHTML('Protein','#9d7dea',d.prot,tp,'g')+mbarHTML('Carbohydrates','#f5a623',d.carb,tc,'g')+mbarHTML('Fat','#f05a5a',d.fat,tf,'g')+(d.fib>0?mbarHTML('Fibre','#22c98a',d.fib,30,'g'):'');
-
+ 
   const ins=generateInsights(d.prot,d.carb,d.fat,'day');
   document.getElementById('an-day-insights').innerHTML=ins.map(i=>`<div class="ic ${i.t}"><div class="ic-title">${i.h}</div><div class="ic-body">${i.b}</div></div>`).join('');
   document.getElementById('an-day-food').innerHTML=foodSuggestionsHTML(Math.max(0,tp-d.prot),Math.max(0,tc-d.carb),Math.max(0,tf-d.fat));
 }
-
+ 
 function renderAnalysis(){
   if(analysisTab==='month') renderAnalysisMonthPanel();
   else renderAnalysisDayPanel();
 }
-
+ 
 // ─── Charts ───────────────────────────────────────────────────────────────────
 function chShiftMonth(dir){ chViewMonth+=dir;if(chViewMonth>11){chViewMonth=0;chViewYear++}else if(chViewMonth<0){chViewMonth=11;chViewYear--} renderCharts() }
 function chGoToday(){ chViewYear=NOW.getFullYear();chViewMonth=NOW.getMonth();renderCharts() }
-
+ 
 function renderCharts(){
   document.getElementById('ch-month-title').textContent=monthLabel(chViewYear,chViewMonth);
   const keys=monthKeys(chViewYear,chViewMonth);
   const loggedKeys=keys.filter(hasData);
   const n=loggedKeys.length||1;
-
+ 
   const totP=loggedKeys.reduce((s,k)=>s+getDay(k).prot,0);
   const totC=loggedKeys.reduce((s,k)=>s+getDay(k).carb,0);
   const totF=loggedKeys.reduce((s,k)=>s+getDay(k).fat,0);
   const totFib=loggedKeys.reduce((s,k)=>s+getDay(k).fib,0);
   const avgP=Math.round(totP/n),avgC=Math.round(totC/n),avgF=Math.round(totF/n);
   const macroTotal=totP+totC+totF+totFib||1;
-
+ 
   document.getElementById('ch-metrics').innerHTML=`
     <div class="metric"><div class="metric-label">Avg protein</div><div class="metric-val purple">${avgP}g</div><div class="metric-sub">target ${profile.tp}g</div></div>
     <div class="metric"><div class="metric-label">Avg carbs</div><div class="metric-val amber">${avgC}g</div><div class="metric-sub">target ${profile.tc}g</div></div>
     <div class="metric"><div class="metric-label">Avg fat</div><div class="metric-val red">${avgF}g</div><div class="metric-sub">target ${profile.tf}g</div></div>
     <div class="metric"><div class="metric-label">Protein %</div><div class="metric-val">${Math.round((totP/macroTotal)*100)}%</div><div class="metric-sub">of total macros</div></div>
   `;
-
+ 
   const tc2='#666',gc='rgba(255,255,255,.06)';
   const labels=keys.map(k=>{ const d=keyDate(k);return d.getDate()+'/'+( d.getMonth()+1)});
-
+ 
   if(charts.donut) charts.donut.destroy();
   charts.donut=new Chart(document.getElementById('ch-donut'),{type:'doughnut',data:{labels:['Protein','Carbs','Fat','Fibre'],datasets:[{data:[totP,totC,totF,totFib],backgroundColor:['#9d7dea','#f5a623','#f05a5a','#22c98a'],borderWidth:0,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const p=Math.round((c.parsed/macroTotal)*100);return`${c.label}: ${c.parsed}g (${p}%)`}}}}}});
-
+ 
   const tdees=keys.map(k=>hasData(k)?getTDEE(k):null);
   const cals=keys.map(k=>{ const d=getDay(k);return d.cal>0?d.cal:null});
   if(charts.calch) charts.calch.destroy();
   charts.calch=new Chart(document.getElementById('ch-cal'),{type:'bar',data:{labels,datasets:[{label:'TDEE',data:tdees,backgroundColor:'rgba(34,201,138,.5)',borderRadius:3},{label:'Consumed',data:cals,backgroundColor:'rgba(91,156,246,.65)',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y!==null?c.parsed.y.toLocaleString()+' kcal':'—'}`}}},scales:{x:{ticks:{color:tc2,font:{size:9}},grid:{display:false}},y:{ticks:{color:tc2,font:{size:9},callback:v=>v.toLocaleString()},grid:{color:gc},beginAtZero:true}}}});
-
+ 
   if(charts.trend) charts.trend.destroy();
   charts.trend=new Chart(document.getElementById('ch-trend'),{type:'line',data:{labels,datasets:[{label:'Protein',data:keys.map(k=>getDay(k).prot||null),borderColor:'#9d7dea',backgroundColor:'transparent',tension:.35,pointRadius:3,pointBackgroundColor:'#9d7dea'},{label:'Carbs',data:keys.map(k=>getDay(k).carb||null),borderColor:'#f5a623',backgroundColor:'transparent',tension:.35,pointRadius:3,pointBackgroundColor:'#f5a623',borderDash:[4,3]},{label:'Fat',data:keys.map(k=>getDay(k).fat||null),borderColor:'#f05a5a',backgroundColor:'transparent',tension:.35,pointRadius:3,pointBackgroundColor:'#f05a5a',borderDash:[2,2]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y!==null?c.parsed.y+'g':'—'}`}}},scales:{x:{ticks:{color:tc2,font:{size:9}},grid:{display:false}},y:{ticks:{color:tc2,font:{size:9},callback:v=>v+'g'},grid:{color:gc},beginAtZero:true}}}});
-
+ 
   const nets=keys.map(k=>{ const d=getDay(k);return d.cal>0?d.cal-getTDEE(k):null});
   if(charts.netch) charts.netch.destroy();
   charts.netch=new Chart(document.getElementById('ch-net'),{type:'bar',data:{labels,datasets:[{label:'Net',data:nets,backgroundColor:nets.map(n=>n===null?'transparent':n>0?'rgba(240,90,90,.75)':'rgba(34,201,138,.6)'),borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const v=c.parsed.y;return v===null?'No data':(v>0?'Surplus +':'Deficit ')+v.toLocaleString()+' kcal'}}}},scales:{x:{ticks:{color:tc2,font:{size:9}},grid:{display:false}},y:{ticks:{color:tc2,font:{size:9},callback:v=>(v>0?'+':'')+v.toLocaleString()},grid:{color:gc}}}}});
 }
-
+ 
 // ─── Maintenance ──────────────────────────────────────────────────────────────
 function setMaintTab(tab){
   maintTab=tab;
@@ -1026,17 +1029,17 @@ function setMaintTab(tab){
 }
 function mnShiftMonth(dir){ mnViewMonth+=dir;if(mnViewMonth>11){mnViewMonth=0;mnViewYear++}else if(mnViewMonth<0){mnViewMonth=11;mnViewYear--} renderMaintenance() }
 function mnGoToday(){ mnViewYear=NOW.getFullYear();mnViewMonth=NOW.getMonth();renderMaintenance() }
-
+ 
 function renderMaintenance(){
   const bmr=getBMR();
   const neatStr=profile.neat>0?` &nbsp;+&nbsp; NEAT ${profile.neat} kcal`:'';
   document.getElementById('mn-formula').innerHTML=`BMR (Mifflin-St Jeor): <strong>${bmr.toLocaleString()} kcal</strong> &nbsp;+&nbsp; steps × ${profile.kcalStep.toFixed(3)} kcal${neatStr} &nbsp;+&nbsp; exercise burn = daily TDEE`;
   document.getElementById('p-formula').innerHTML=`BMR: <strong>${bmr.toLocaleString()} kcal</strong> &nbsp;|&nbsp; 10,000 steps ≈ <strong>${Math.round(10000*profile.kcalStep)} kcal</strong>${profile.neat>0?` &nbsp;|&nbsp; NEAT baseline <strong>+${profile.neat} kcal</strong>`:''}`;
-
+ 
   if(maintTab==='month') renderMaintMonth(bmr);
   else renderMaintAll(bmr);
 }
-
+ 
 function renderMaintMonth(bmr){
   const y=mnViewYear,m=mnViewMonth;
   document.getElementById('mn-month-title').textContent=monthLabel(y,m);
@@ -1046,7 +1049,7 @@ function renderMaintMonth(bmr){
   const totalMaint=keys.reduce((s,k)=>s+getTDEE(k),0);
   const totalCal=keys.reduce((s,k)=>s+getDay(k).cal,0);
   const avgMaint=Math.round(totalMaint/n);
-
+ 
   document.getElementById('mn-metrics').innerHTML=`
     <div class="metric"><div class="metric-label">BMR</div><div class="metric-val">${bmr.toLocaleString()}</div><div class="metric-sub">kcal at rest</div></div>
     <div class="metric"><div class="metric-label">Avg daily TDEE</div><div class="metric-val blue">${keys.length>0?avgMaint.toLocaleString():'—'}</div><div class="metric-sub">${monthLabel(y,m)}</div></div>
@@ -1059,7 +1062,7 @@ function renderMaintMonth(bmr){
     <div class="metric"><div class="metric-label">Monthly surplus</div><div class="metric-val ${totalNet>=0?'red':'green'}">${totalNet>=0?'+':''}${totalNet.toLocaleString()}</div><div class="metric-sub">kcal vs TDEE</div></div>
     <div class="metric"><div class="metric-label">Fat stored/lost</div><div class="metric-val ${totalNet>=0?'red':'green'}">${totalNet>=0?'+':''}${(totalNet/7700).toFixed(2)} kg</div><div class="metric-sub">est.</div></div>
   `;
-
+ 
   const allKeys=monthKeys(y,m);
   const labels=allKeys.map(k=>{ const d=keyDate(k);return d.getDate()+'/'+(d.getMonth()+1)});
   const tdees=allKeys.map(k=>hasData(k)?getTDEE(k):null);
@@ -1069,7 +1072,7 @@ function renderMaintMonth(bmr){
   if(charts.maint) charts.maint.destroy();
   charts.maint=new Chart(document.getElementById('mn-chart'),{type:'bar',data:{labels,datasets:[{label:'TDEE',data:tdees,backgroundColor:'rgba(34,201,138,.45)',borderRadius:3},{label:'Consumed',data:cals,backgroundColor:'rgba(91,156,246,.6)',borderRadius:3},{label:'Net',data:nets,backgroundColor:nets.map(n=>n===null?'transparent':n>0?'rgba(240,90,90,.75)':'rgba(157,125,234,.55)'),borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y!==null?c.parsed.y.toLocaleString()+' kcal':'—'}`}}},scales:{x:{ticks:{color:tc2,font:{size:9}},grid:{display:false}},y:{ticks:{color:tc2,font:{size:9},callback:v=>v.toLocaleString()},grid:{color:gc},beginAtZero:true}}}});
 }
-
+ 
 function renderMaintAll(bmr){
   // Gather every logged day across all time
   const allLogged=Object.keys(dayData).filter(hasData).sort();
@@ -1079,24 +1082,24 @@ function renderMaintAll(bmr){
   const grandCal=allLogged.reduce((s,k)=>s+getDay(k).cal,0);
   const avgDailyNet=Math.round(grandNet/n);
   const avgTDEE=Math.round(grandMaint/n);
-
+ 
   // Date span
   const spanStr=allLogged.length>0?shortDate(allLogged[0])+' – '+shortDate(allLogged[allLogged.length-1]):'no data';
-
+ 
   document.getElementById('mn-all-metrics').innerHTML=`
     <div class="metric"><div class="metric-label">Days logged</div><div class="metric-val blue">${allLogged.length}</div><div class="metric-sub">${spanStr}</div></div>
     <div class="metric"><div class="metric-label">Avg daily TDEE</div><div class="metric-val">${allLogged.length>0?avgTDEE.toLocaleString():'—'}</div><div class="metric-sub">across all logged days</div></div>
     <div class="metric"><div class="metric-label">Avg daily net</div><div class="metric-val ${avgDailyNet>0?'red':'green'}">${avgDailyNet>=0?'+':''}${avgDailyNet.toLocaleString()}</div><div class="metric-sub">kcal per day</div></div>
     <div class="metric"><div class="metric-label">All-time net</div><div class="metric-val ${grandNet>0?'red':'green'}">${grandNet>=0?'+':''}${grandNet.toLocaleString()}</div><div class="metric-sub">kcal cumulative</div></div>
   `;
-
+ 
   document.getElementById('mn-all-surplus').innerHTML=`
     <div class="metric"><div class="metric-label">Total maintenance</div><div class="metric-val">${grandMaint.toLocaleString()}</div><div class="metric-sub">kcal needed all-time</div></div>
     <div class="metric"><div class="metric-label">Total consumed</div><div class="metric-val">${grandCal.toLocaleString()}</div><div class="metric-sub">kcal eaten all-time</div></div>
     <div class="metric"><div class="metric-label">All-time surplus</div><div class="metric-val ${grandNet>=0?'red':'green'}">${grandNet>=0?'+':''}${grandNet.toLocaleString()}</div><div class="metric-sub">kcal vs TDEE</div></div>
     <div class="metric"><div class="metric-label">Est. fat change</div><div class="metric-val ${grandNet>=0?'red':'green'}">${grandNet>=0?'+':''}${(grandNet/7700).toFixed(2)} kg</div><div class="metric-sub">since you started</div></div>
   `;
-
+ 
   // Group net by month
   const monthNets={};
   allLogged.forEach(k=>{
@@ -1108,17 +1111,17 @@ function renderMaintAll(bmr){
   const monthLabels=sortedMonths.map(ym=>{ const[yy,mm]=ym.split('-').map(Number);return new Date(yy,mm-1,1).toLocaleDateString('en-AU',{month:'short',year:'2-digit'})});
   const monthNetVals=sortedMonths.map(ym=>Math.round(monthNets[ym]));
   const tc2='#666',gc='rgba(255,255,255,.06)';
-
+ 
   if(charts.mnAll) charts.mnAll.destroy();
   charts.mnAll=new Chart(document.getElementById('mn-all-chart'),{type:'bar',data:{labels:monthLabels,datasets:[{label:'Net',data:monthNetVals,backgroundColor:monthNetVals.map(v=>v>0?'rgba(240,90,90,.75)':'rgba(34,201,138,.6)'),borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const v=c.parsed.y;return(v>0?'Surplus +':'Deficit ')+v.toLocaleString()+' kcal'}}}},scales:{x:{ticks:{color:tc2,font:{size:10}},grid:{display:false}},y:{ticks:{color:tc2,font:{size:9},callback:v=>(v>0?'+':'')+v.toLocaleString()},grid:{color:gc}}}}});
-
+ 
   // Cumulative running total day by day
   let running=0;
   const cumPoints=allLogged.map(k=>{ running+=getDay(k).cal-getTDEE(k);return running });
   const cumLabels=allLogged.map(k=>shortDate(k));
   if(charts.mnCum) charts.mnCum.destroy();
   charts.mnCum=new Chart(document.getElementById('mn-cumulative-chart'),{type:'line',data:{labels:cumLabels,datasets:[{label:'Cumulative net',data:cumPoints,borderColor:'#5b9cf6',backgroundColor:'rgba(91,156,246,.1)',fill:true,tension:.25,pointRadius:cumPoints.length>40?0:3,pointBackgroundColor:'#5b9cf6'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`Running total: ${c.parsed.y>=0?'+':''}${c.parsed.y.toLocaleString()} kcal`}}},scales:{x:{ticks:{color:tc2,font:{size:9},maxTicksLimit:12},grid:{display:false}},y:{ticks:{color:tc2,font:{size:9},callback:v=>(v>0?'+':'')+v.toLocaleString()},grid:{color:gc}}}}});
-
+ 
   // Month-by-month table
   const rows=sortedMonths.slice().reverse().map(ym=>{
     const[yy,mm]=ym.split('-').map(Number);
@@ -1133,16 +1136,16 @@ function renderMaintAll(bmr){
     ?`<thead><tr><th>Month</th><th>Days</th><th>Maintenance</th><th>Consumed</th><th>Net</th><th>Fat Δ</th></tr></thead><tbody>${rows}</tbody>`
     :'<tbody><tr><td style="color:var(--t3)">No data logged yet.</td></tr></tbody>';
 }
-
+ 
 // ─── History ──────────────────────────────────────────────────────────────────
 function renderHistory(){
   const allKeys=Object.keys(dayData).filter(k=>dayData[k]&&hasData(k)).sort().reverse();
   if(allKeys.length===0){ document.getElementById('hist-list').innerHTML='<div style="padding:1.5rem;color:var(--t3);font-size:14px;text-align:center">No days logged yet.</div>';return }
-
+ 
   // Group by month
   const groups={};
   allKeys.forEach(k=>{ const ym=k.slice(0,7); if(!groups[ym]) groups[ym]=[]; groups[ym].push(k) });
-
+ 
   let html='';
   Object.keys(groups).sort().reverse().forEach(ym=>{
     const [y,m]=ym.split('-').map(Number);
@@ -1158,17 +1161,17 @@ function renderHistory(){
   });
   document.getElementById('hist-list').innerHTML=html;
 }
-
+ 
 // ─── Google Drive sync ────────────────────────────────────────────────────────
 const CLIENT_ID = '841500265974-1ed5dbiljquerma1cn64p7c2c7qq16ku.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 const DRIVE_FILENAME = 'cal-tracker-data.json';
-
+ 
 let driveToken = null;
 let driveFileId = localStorage.getItem('cal2_drive_file_id') || null;
 let driveLastSync = localStorage.getItem('cal2_drive_last_sync') || null;
 let tokenClient = null;
-
+ 
 function driveInit(){
   if(typeof google === 'undefined') return;
   tokenClient = google.accounts.oauth2.initTokenClient({
@@ -1189,12 +1192,12 @@ function driveInit(){
     tokenClient.requestAccessToken({prompt:''});
   }
 }
-
+ 
 function driveSignIn(){
   if(!tokenClient){ driveSetStatus('error','Google sign-in not loaded yet — try refreshing'); return; }
   tokenClient.requestAccessToken({prompt:'consent'});
 }
-
+ 
 function driveSignOut(){
   if(driveToken) google.accounts.oauth2.revoke(driveToken);
   driveToken=null;
@@ -1202,7 +1205,7 @@ function driveSignOut(){
   driveSetStatus('disconnected','Signed out — data still saved locally');
   updateDriveButtons();
 }
-
+ 
 async function driveLoadOrCreate(){
   try{
     // Search for existing file
@@ -1217,7 +1220,7 @@ async function driveLoadOrCreate(){
         localStorage.setItem('cal2_drive_file_id', driveFileId);
       }
     }
-
+ 
     if(driveFileId){
       // File exists — download and merge
       const res = await fetch(
@@ -1246,7 +1249,7 @@ async function driveLoadOrCreate(){
     driveSetStatus('error','Sync failed: '+e.message);
   }
 }
-
+ 
 async function driveSave(){
   if(!driveToken) return;
   const payload = JSON.stringify({version:2, profile, dayData});
@@ -1285,13 +1288,13 @@ async function driveSave(){
     driveSetStatus('error','Save failed: '+e.message);
   }
 }
-
+ 
 async function driveSyncNow(){
   if(!driveToken){ driveSetStatus('error','Not signed in'); return; }
   driveSetStatus('syncing','Syncing…');
   await driveSave();
 }
-
+ 
 function driveSetStatus(state, text){
   const el = document.getElementById('drive-status');
   const txt = document.getElementById('drive-status-text');
@@ -1299,7 +1302,7 @@ function driveSetStatus(state, text){
   el.className = 'drive-status ' + state;
   txt.textContent = text;
 }
-
+ 
 function updateDriveButtons(){
   const signIn = document.getElementById('drive-signin-btn');
   const signOut = document.getElementById('drive-signout-btn');
@@ -1315,10 +1318,10 @@ function updateDriveButtons(){
     syncBtn.style.display = 'none';
   }
 }
-
+ 
 // Patch save() to also push to Drive after every local save
 const _localSave = save;
-
+ 
 // ─── Data IO ──────────────────────────────────────────────────────────────────
 function exportData(){
   const blob=new Blob([JSON.stringify({version:2,profile,dayData},null,2)],{type:'application/json'});
@@ -1349,13 +1352,13 @@ function clearAll(){
   dayData={};save();renderAll();toast('All data cleared');
 }
 function toast(msg){ const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400) }
-
+ 
 // ─── Consistency ──────────────────────────────────────────────────────────────
 function computeStreaks(){
   // Build sorted list of all logged date keys
   const logged=new Set(Object.keys(dayData).filter(hasData));
   const todayK=todayKey();
-
+ 
   // Current streak — count backwards from today (or yesterday if today not logged yet)
   let currentStreak=0;
   let checkDate=new Date(NOW);
@@ -1369,7 +1372,7 @@ function computeStreaks(){
     currentStreak++;
     checkDate.setDate(checkDate.getDate()-1);
   }
-
+ 
   // Longest streak ever
   let longestStreak=0,runLen=0,runStart=null,bestStart=null,bestEnd=null;
   const allSorted=Array.from(logged).sort();
@@ -1384,7 +1387,7 @@ function computeStreaks(){
     prevDate=d;
   });
   if(runLen>longestStreak){longestStreak=runLen;bestStart=runStart;bestEnd=prevDate}
-
+ 
   // Days since last log
   let daysSince=null;
   if(allSorted.length>0){
@@ -1392,10 +1395,10 @@ function computeStreaks(){
     const lastD=keyDate(lastK);
     daysSince=Math.round((new Date(NOW.getFullYear(),NOW.getMonth(),NOW.getDate())-new Date(lastD.getFullYear(),lastD.getMonth(),lastD.getDate()))/86400000);
   }
-
+ 
   // Total logged
   const totalLogged=allSorted.length;
-
+ 
   // Streak runs for history list
   const runs=[];
   let rLen=0,rStart=null,rEnd=null;
@@ -1411,15 +1414,15 @@ function computeStreaks(){
   });
   if(rLen>1) runs.push({len:rLen,start:rStart,end:rEnd});
   runs.sort((a,b)=>b.len-a.len);
-
+ 
   return{currentStreak,longestStreak,bestStart,bestEnd,daysSince,totalLogged,allSorted,logged,runs};
 }
-
+ 
 function renderConsistency(){
   const{currentStreak,longestStreak,bestStart,bestEnd,daysSince,totalLogged,allSorted,logged,runs}=computeStreaks();
   const todayK=todayKey();
   const todayLogged=logged.has(todayK);
-
+ 
   // Nudge
   const nudgeEl=document.getElementById('cs-nudge');
   if(daysSince===null){
@@ -1433,7 +1436,7 @@ function renderConsistency(){
   } else {
     nudgeEl.innerHTML='';
   }
-
+ 
   // Hero cards
   const streakColor=currentStreak>=7?'var(--green)':currentStreak>=3?'var(--amber)':'var(--t2)';
   const streakEmoji=currentStreak>=30?'🔥':currentStreak>=14?'⚡':currentStreak>=7?'✦':'';
@@ -1459,7 +1462,7 @@ function renderConsistency(){
       <div class="streak-sub">${daysSince===0?'Logged today':daysSince===null?'Nothing logged yet':'Last: '+shortDate(allSorted[allSorted.length-1])}</div>
     </div>
   `;
-
+ 
   // Heatmap — show last 52 weeks (364 days) ending today
   const HEATMAP_WEEKS=52;
   const endDate=new Date(NOW);
@@ -1470,7 +1473,7 @@ function renderConsistency(){
   endDate.setDate(endDate.getDate()+(7-daysToLastSun)%7);
   const startDate=new Date(endDate);
   startDate.setDate(endDate.getDate()-(HEATMAP_WEEKS*7-1));
-
+ 
   // Build columns (each col = one week Mon–Sun)
   let cols=[];
   let monthLabels=[];
@@ -1491,7 +1494,7 @@ function renderConsistency(){
     }
     cols.push(col);
   }
-
+ 
   // Month label row
   let monthHTML='';
   for(let w=0;w<HEATMAP_WEEKS;w++){
@@ -1499,7 +1502,7 @@ function renderConsistency(){
     monthHTML+=`<div class="heatmap-month-label" style="width:13px;flex-shrink:0">${lbl?lbl.label:''}</div>`;
   }
   document.getElementById('cs-heatmap-month-row').innerHTML=monthHTML;
-
+ 
   // Cells
   let hmHTML='';
   cols.forEach(col=>{
@@ -1524,7 +1527,7 @@ function renderConsistency(){
     hmHTML+='</div>';
   });
   document.getElementById('cs-heatmap').innerHTML=hmHTML;
-
+ 
   // Monthly consistency bars
   // Get all distinct year-months from logged days + last 12 months
   const months=new Set();
@@ -1535,7 +1538,7 @@ function renderConsistency(){
   }
   allSorted.forEach(k=>months.add(k.slice(0,7)));
   const sortedMonths=Array.from(months).sort().reverse().slice(0,18);
-
+ 
   let barsHTML='';
   sortedMonths.forEach(ym=>{
     const[y,m]=ym.split('-').map(Number);
@@ -1552,7 +1555,7 @@ function renderConsistency(){
     </div>`;
   });
   document.getElementById('cs-month-bars').innerHTML=barsHTML||'<div style="color:var(--t3);font-size:13px">No data yet.</div>';
-
+ 
   // Streak history
   let shHTML='';
   if(runs.length===0){
@@ -1567,8 +1570,8 @@ function renderConsistency(){
   }
   document.getElementById('cs-streak-history').innerHTML=shHTML;
 }
-
-
+ 
+ 
 function renderAll(){
   renderOverview();
   renderLogCalendar();
@@ -1578,7 +1581,7 @@ function renderAll(){
   renderHistory();
   renderConsistency();
 }
-
+ 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 load();
 selectedLogDate=todayKey();
@@ -1590,3 +1593,4 @@ window.addEventListener('load', ()=>{ setTimeout(driveInit, 500) });
 </script>
 </body>
 </html>
+ 
